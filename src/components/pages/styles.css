@@ -1,0 +1,360 @@
+/* Estilos globales */
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: Arial, sans-serif;
+}
+
+/* Registro y Login */
+body.Registro, body.login {
+    background-image: url('/public/assets/imgs/background-gallery.jpg');
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container-registro, .container-login {
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 20px;
+    border-radius: 10px;
+    width: 300px;
+}
+
+h1, h2 {
+    color: white;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.form-group-registro, .form-group-login {
+    margin-bottom: 15px;
+}
+
+.form-group-registro label, .form-group-login label {
+    display: block;
+    color: white;
+    margin-bottom: 5px;
+}
+
+.form-group-registro input, .form-group-registro select, 
+.form-group-login input {
+    width: 100%;
+    padding: 8px;
+    border: none;
+    border-radius: 4px;
+}
+
+.button-group-registro, .submit-btn {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    background-color: white;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.footer-registro, .footer-login {
+    color: white;
+    text-align: center;
+    font-size: 0.8em;
+    margin-top: 20px;
+}
+
+/* Sección de reseñas */
+body.Reseña {
+    background-image: url('https://hebbkx1anhila5yf.public.blob.vercel-storage.com/background-gallery-oOMZXbgqQJskXyHWQliIUz6XuwpJff.jpg');
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container-reseña {
+    width: 90%;
+    max-width: 400px;
+    padding: 20px;
+}
+
+.review-card-reseña {
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.barber-info-reseña {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.profile-picture-reseña {
+    width: 50px;
+    height: 50px;
+    background-color: #ddd;
+    border-radius: 50%;
+    margin: 0 auto 10px;
+}
+
+.stars {
+    color: gold;
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    color: white;
+    margin-bottom: 5px;
+}
+
+textarea {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: none;
+    border-radius: 4px;
+    resize: vertical;
+}
+
+.rating {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.rating .star {
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.rating .star:hover,
+.rating .star:hover ~ .star {
+    color: gold;
+}
+
+/* Sección de perfil */
+body.Perfil {
+    background-image: url('/public/assets/imgs/background-gallery.jpg');
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container-perfil {
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 20px;
+    border-radius: 10px;
+    width: 300px;
+}
+
+.form-group-perfil {
+    margin-bottom: 15px;
+}
+
+.form-group-perfil input, 
+.form-group-perfil textarea {
+    width: 100%;
+    padding: 8px;
+    border: none;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.form-group-perfil textarea {
+    resize: vertical;
+}
+
+/* Sección de barberos */
+body.Barberos {
+    background-image: url('https://hebbkx1anhila5yf.public.blob.vercel-storage.com/background-gallery-GdqhhLbViCbAhwdkcZL8Yrae21zpQg.jpg');
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container-barberos {
+    width: 90%;
+    max-width: 400px;
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 10px;
+}
+
+.barber-list-barberos {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.barber-item-barberos {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 20px;
+    background-color: #333;
+    color: #fff;
+    border-radius: 5px;
+}
+
+.barber-item-barberos:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Sección de barberías */
+body.Barberias {
+    background-image: url('https://hebbkx1anhila5yf.public.blob.vercel-storage.com/background-gallery-GdqhhLbViCbAhwdkcZL8Yrae21zpQg.jpg');
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container-barberias {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.barber-list {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.barber-item-barberias {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    width: 200px;
+    text-align: center;
+    background-color: #f9f9f9;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.barber-item-barberias:hover {
+    background-color: #e0e0e0;
+}
+
+/* Estrellas en barberías */
+.star {
+    color: gold;
+    font-size: 18px;
+}
+
+.star.empty {
+    color: #ccc;
+}
+
+/* Estilos para index */
+.container-index {
+    min-height: 100vh;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: white;
+    position: relative;
+}
+
+.container-index::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.main {
+    position: relative;
+    max-width: 600px;
+    width: 100%;
+    padding: 2rem;
+}
+
+.logo {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 1rem;
+}
+
+.button-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.btn {
+    padding: 1rem;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    background-color: #ffffff;
+    color: #000000;
+    transition: background-color 0.3s;
+}
+
+.btn:hover {
+    background-color: #e0e0e0;
+}
+
+.btn-premium {
+    background-color: #ffd700;
+}
+
+.btn-premium:hover {
+    background-color: #ffcc00;
+}
+
+.footer-index {
+    position: absolute;
+    bottom: 1rem;
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+}
+
+.social-icon {
+    color: rgb(255, 254, 254);
+    font-size: 1.5rem;
+}
+
+.social-icon:hover {
+    color: #d11818;
+}
+
+/* Responsivo */
+@media (max-width: 600px) {
+    .button-grid {
+        grid-template-columns: 1fr;
+    }
+}
