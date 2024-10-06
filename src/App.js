@@ -7,6 +7,8 @@ import RecuperarContraseña from'./components/pages/RecuperarContraseña.jsx'
 import Membresias from './components/pages/Membresias';
 import Index from './components/pages/index.tsx';
 import Registro from './components/pages/Registro.tsx';
+import BarberiasDisponibles from './components/pages/BarberiasDisponibles.tsx';
+import Barberosbarbafina from './components/pages/BarberosDisponibles-Barbafina.tsx';
 import './App.css';
 
 function App() {
@@ -21,6 +23,8 @@ function App() {
           <Route path="RecuperarContraseña" element={<RecuperarContraseña />} />
           <Route path="/membresias" element={<Membresias />} />
           <Route path="/Registro" element={<Registro />} />
+          <Route path="/Barberias-Disponibles" element={<BarberiasDisponibles />} />
+          <Route path="/Barberos-Disponibles/barbafina" element={<Barberosbarbafina />} />
         </Routes>
       </div>
     </Router>
