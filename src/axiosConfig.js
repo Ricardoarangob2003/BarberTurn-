@@ -17,7 +17,7 @@ axiosInstance.interceptors.response.use(
       // Manejo de errores específicos según el código de estado
       if (error.response.status === 401) {
         // Redirigir al login o mostrar un mensaje de sesión expirada
-        window.location.href = '/login';
+        window.location.href = '/iniciar-sesion';
       } else if (error.response.status === 500) {
         console.error('Error del servidor:', error.response.data);
         // Mostrar una alerta o notificación global (puedes usar una librería como Toast para esto)

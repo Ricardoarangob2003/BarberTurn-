@@ -5,10 +5,12 @@ export default function Register() {
   const [registrationType, setRegistrationType] = useState('');
   const [gender, setGender] = useState('');
   const [formData, setFormData] = useState({
-    name: '',
-    surname: '',
+    nombre: '',
+    apellido: '',
     email: '',
-    password: ''
+    contrasena: '',
+    username: '',
+    telefono: ''
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -27,12 +29,12 @@ export default function Register() {
     setIsLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:8090/api/register', {
+      const response = await axios.post('http://localhost:8090/api/cliente/post', {
         ...formData,
         registrationType,
         gender
       });
-      
+
       console.log('Registro exitoso:', response.data);
       // Aquí puedes manejar la respuesta exitosa, como redirigir al usuario o mostrar un mensaje de éxito
     } catch (err) {
@@ -73,7 +75,7 @@ export default function Register() {
           </div>
           <input
             type="text"
-            name="name"
+            name="nombre"
             placeholder="Nombre"
             required
             style={styles.input}
@@ -81,47 +83,44 @@ export default function Register() {
           />
           <input
             type="text"
-            name="surname"
+            name="apellido"
             placeholder="Apellido"
             required
             style={styles.input}
             onChange={handleInputChange}
           />
           <input
-            type="text"
+            type="email"
             name="email"
-            placeholder="Correo / Numero"
+            placeholder="Correo"
             required
             style={styles.input}
             onChange={handleInputChange}
           />
           <input
             type="password"
-            name="password"
+            name="contrasena"
             placeholder="Contraseña"
             required
             style={styles.input}
             onChange={handleInputChange}
           />
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Genero</label>
-            <div style={styles.buttonGroup}>
-              <button
-                type="button"
-                style={gender === 'Hombre' ? styles.activeButton : styles.button}
-                onClick={() => setGender('Hombre')}
-              >
-                Hombre
-              </button>
-              <button
-                type="button"
-                style={gender === 'Mujer' ? styles.activeButton : styles.button}
-                onClick={() => setGender('Mujer')}
-              >
-                Mujer
-              </button>
-            </div>
-          </div>
+          <input
+            type="text"
+            name="username"
+            placeholder="Usuario"
+            required
+            style={styles.input}
+            onChange={handleInputChange}
+          />
+          <input
+            type="tel"
+            name="telefono"
+            placeholder="Teléfono"
+            required
+            style={styles.input}
+            onChange={handleInputChange}
+          />
           <button type="submit" style={styles.submitButton} disabled={isLoading}>
             {isLoading ? 'Registrando...' : 'Registrarme'}
           </button>
@@ -134,6 +133,8 @@ export default function Register() {
     </div>
   );
 }
+
+
 
 const styles = {
   container: {

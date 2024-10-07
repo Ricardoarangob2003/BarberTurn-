@@ -3,9 +3,16 @@ import { useNavigate, Link } from 'react-router-dom';
 import axiosInstance from '../../axiosConfig';
 import axios from 'axios';
 
+interface User {
+  id: string;
+  email: string;
+  contrasena: string;
+  // Añade otras propiedades del usuario según sea necesario
+}
+
 export default function Login() {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [contrasena, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -16,19 +23,33 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      const response = await axiosInstance.post('/login', { email, password });
-      console.log('Login successful:', response.data);
-      // Aquí puedes manejar la respuesta exitosa, por ejemplo:
-      // - Guardar el token en localStorage
-      // localStorage.setItem('token', response.data.token);
-      // - Actualizar el estado global de la aplicación
-      // - Redirigir al usuario a la página principal
-      navigate('/barberias-disponibles');
+      const response = await axiosInstance.get<User[]>('http://localhost:8090/api/cliente');
+      console.log('Users fetched:', response.data);
+      
+      const user = response.data.find(u => u.email === email && u.contrasena === contrasena);
+      
+      if (user) {
+        console.log('Login successful:', user);
+        
+        // Generar un token simple (en producción, esto debería hacerse en el servidor)
+        const token = btoa(user.id + ':' + Date.now());
+        
+        // Almacenar el token en localStorage
+        localStorage.setItem('token', token);
+        
+        // Almacenar datos del usuario en localStorage (opcional)
+        localStorage.setItem('user', JSON.stringify({ id: user.id, email: user.email }));
+        
+        // Redirigir al usuario a la página principal
+        navigate('/barberias-disponibles');
+      } else {
+        setError('Credenciales inválidas. Por favor, intenta de nuevo.');
+      }
     } catch (err) {
       if (axios.isAxiosError(err) && err.response) {
         setError(err.response.data.message || 'Error al iniciar sesión. Por favor, intenta de nuevo.');
       } else {
-        setError('Error al iniciar sesión. Por favor, intenta de nuevo.');
+        setError('Error al iniciar sesión. Por favor, intenta de nuevo más tarde.');
       }
     } finally {
       setIsLoading(false);
@@ -42,22 +63,22 @@ export default function Login() {
         <h2 style={styles.subtitle}>Iniciar Sesión</h2>
         <form onSubmit={handleSubmit} style={styles.form}>
           <input
-            type="text"
+            type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="Correo"
+            placeholder="Correo electrónico"
             style={styles.input}
             required
           />
           <input
             type="password"
-            value={password}
+            value={contrasena}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Contraseña"
             style={styles.input}
             required
           />
-          <Link to="/recuperarcontraseña" style={styles.forgotPassword}>¿Olvidaste tu contraseña?</Link>
+          <Link to="/recuperar-contrasena" style={styles.forgotPassword}>¿Olvidaste tu contraseña?</Link>
           <button type="submit" style={styles.button} disabled={isLoading}>
             {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
           </button>
@@ -122,6 +143,14 @@ const styles = {
     background: 'white',
     color: 'black',
     cursor: 'pointer',
+    transition: 'background-color 0.3s',
+    ':hover': {
+      backgroundColor: '#f0f0f0',
+    },
+    ':disabled': {
+      backgroundColor: '#cccccc',
+      cursor: 'not-allowed',
+    },
   },
   footer: {
     marginTop: '20px',
@@ -130,9 +159,14 @@ const styles = {
   registerLink: {
     color: 'white',
     textDecoration: 'none',
+    fontWeight: 'bold',
   },
   error: {
-    color: 'red',
+    color: '#ff6b6b',
     marginTop: '10px',
+    fontSize: '0.9em',
+    backgroundColor: 'rgba(255, 0, 0, 0.1)',
+    padding: '10px',
+    borderRadius: '5px',
   },
 };
