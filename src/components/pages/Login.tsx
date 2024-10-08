@@ -7,6 +7,8 @@ interface User {
   id: string;
   email: string;
   contrasena: string;
+  nombre: string;
+  apellido: string;
   // Añade otras propiedades del usuario según sea necesario
 }
 
@@ -37,8 +39,9 @@ export default function Login() {
         // Almacenar el token en localStorage
         localStorage.setItem('token', token);
         
-        // Almacenar datos del usuario en localStorage (opcional)
-        localStorage.setItem('user', JSON.stringify({ id: user.id, email: user.email }));
+        
+        localStorage.setItem('user', JSON.stringify({ id: user.id, email: user.email, nombre: user.nombre,
+          apellido: user.apellido }));
         
         // Redirigir al usuario a la página principal
         navigate('/barberias-disponibles');
@@ -90,6 +93,7 @@ export default function Login() {
         <p style={styles.footer}>© 2024 BarberTurn. Todos los derechos reservados.</p>
       </div>
     </div>
+    
   );
 }
 

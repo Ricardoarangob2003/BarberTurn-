@@ -50,7 +50,7 @@ const BarberosDisponibles: React.FC = () => {
           {barbers.map((barber) => (
             <Link
               key={barber.id}
-              to={`/appointment/${barber.id}`}
+              to={`/Reserva-Turno/${barber.id}`}
               style={styles.barberLink}
             >
               <div style={styles.barberItem}>

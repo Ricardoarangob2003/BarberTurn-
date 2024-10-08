@@ -123,7 +123,9 @@ export default function Register() {
           />
           <button type="submit" style={styles.submitButton} disabled={isLoading}>
             {isLoading ? 'Registrando...' : 'Registrarme'}
+            
           </button>
+          
         </form>
         {error && <p style={styles.error}>{error}</p>}
         <div style={styles.footer}>

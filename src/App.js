@@ -9,6 +9,9 @@ import Index from './components/pages/index.tsx';
 import Registro from './components/pages/Registro.tsx';
 import BarberiasDisponibles from './components/pages/BarberiasDisponibles.tsx';
 import Barberosbarbafina from './components/pages/BarberosDisponibles-Barbafina.tsx';
+import Barberostucorte from './components/pages/BarberosDisponibles-Tucorte.tsx';
+import Barberosbarbershop from './components/pages/BarberosDisponibles-Barbershop.tsx';
+import ReservaTurno from './components/pages/ReservaTurno.tsx';
 import './App.css';
 
 function App() {
@@ -25,6 +28,9 @@ function App() {
           <Route path="/Registro" element={<Registro />} />
           <Route path="/Barberias-Disponibles" element={<BarberiasDisponibles />} />
           <Route path="/Barberos-Disponibles/barbafina" element={<Barberosbarbafina />} />
+          <Route path="/Barberos-Disponibles/tucorte" element={<Barberostucorte />} />
+          <Route path="/Barberos-Disponibles/barbershop" element={<Barberosbarbershop />} />
+          <Route path="/Reserva-Turno/:barberId" element={<ReservaTurno />} />
         </Routes>
       </div>
     </Router>

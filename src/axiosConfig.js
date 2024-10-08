@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:8080/api',  // URL base de tu API
+  baseURL: 'http://localhost:8090/api',  // URL base de tu API
   timeout: 10000, // Tiempo máximo de espera para una petición
   headers: {
     'Content-Type': 'application/json',
