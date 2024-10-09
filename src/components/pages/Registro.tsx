@@ -1,19 +1,26 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import { useNavigate, Link } from 'react-router-dom';
 
-export default function Register() {
-  const [registrationType, setRegistrationType] = useState('');
-  const [gender, setGender] = useState('');
-  const [formData, setFormData] = useState({
+interface FormData {
+  nombre: string;
+  apellido: string;
+  telefono: string;
+  email: string;
+  local?: string;
+  rol: 'barbero' | 'cliente' | '';
+}
+
+export default function Registro() {
+  const [formData, setFormData] = useState<FormData>({
     nombre: '',
     apellido: '',
+    telefono: '',
     email: '',
-    contrasena: '',
-    username: '',
-    telefono: ''
+    local: '',
+    rol: '',
   });
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -23,29 +30,21 @@ export default function Register() {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleRolSelect = (rol: 'barbero' | 'cliente') => {
+    setFormData(prevState => ({
+      ...prevState,
+      rol: rol
+    }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setIsLoading(true);
-
-    try {
-      const response = await axios.post('http://localhost:8090/api/cliente/post', {
-        ...formData,
-        registrationType,
-        gender
-      });
-
-      console.log('Registro exitoso:', response.data);
-      // Aquí puedes manejar la respuesta exitosa, como redirigir al usuario o mostrar un mensaje de éxito
-    } catch (err) {
-      if (axios.isAxiosError(err) && err.response) {
-        setError(err.response.data.message || 'Ocurrió un error durante el registro.');
-      } else {
-        setError('Ocurrió un error durante el registro.');
-      }
-    } finally {
-      setIsLoading(false);
+    if (!formData.rol) {
+      setError('Por favor, seleccione un tipo de registro');
+      return;
     }
+    localStorage.setItem('registroTemporal', JSON.stringify(formData));
+    navigate('/Registro-Credenciales');
   };
 
   return (
@@ -59,15 +58,15 @@ export default function Register() {
             <div style={styles.buttonGroup}>
               <button
                 type="button"
-                style={registrationType === 'Barbero' ? styles.activeButton : styles.button}
-                onClick={() => setRegistrationType('Barbero')}
+                style={formData.rol === 'barbero' ? styles.activeButton : styles.button}
+                onClick={() => handleRolSelect('barbero')}
               >
                 Barbero
               </button>
               <button
                 type="button"
-                style={registrationType === 'Cliente' ? styles.activeButton : styles.button}
-                onClick={() => setRegistrationType('Cliente')}
+                style={formData.rol === 'cliente' ? styles.activeButton : styles.button}
+                onClick={() => handleRolSelect('cliente')}
               >
                 Cliente
               </button>
@@ -90,30 +89,6 @@ export default function Register() {
             onChange={handleInputChange}
           />
           <input
-            type="email"
-            name="email"
-            placeholder="Correo"
-            required
-            style={styles.input}
-            onChange={handleInputChange}
-          />
-          <input
-            type="password"
-            name="contrasena"
-            placeholder="Contraseña"
-            required
-            style={styles.input}
-            onChange={handleInputChange}
-          />
-          <input
-            type="text"
-            name="username"
-            placeholder="Usuario"
-            required
-            style={styles.input}
-            onChange={handleInputChange}
-          />
-          <input
             type="tel"
             name="telefono"
             placeholder="Teléfono"
@@ -121,13 +96,32 @@ export default function Register() {
             style={styles.input}
             onChange={handleInputChange}
           />
-          <button type="submit" style={styles.submitButton} disabled={isLoading}>
-            {isLoading ? 'Registrando...' : 'Registrarme'}
-            
+          <input
+            type="email"
+            name="email"
+            placeholder="Correo electrónico"
+            required
+            style={styles.input}
+            onChange={handleInputChange}
+          />
+          {formData.rol === 'barbero' && (
+            <input
+              type="text"
+              name="local"
+              placeholder="Local"
+              required
+              style={styles.input}
+              onChange={handleInputChange}
+            />
+          )}
+          <button type="submit" style={styles.submitButton}>
+            Continuar con el registro
           </button>
-          
         </form>
         {error && <p style={styles.error}>{error}</p>}
+        <p style={styles.loginLink}>
+          ¿Ya tienes una cuenta? <Link to="/iniciar-sesion" style={styles.link}>Iniciar sesión</Link>
+        </p>
         <div style={styles.footer}>
           © 2024 BarberTurn. Todos los derechos reservados.
         </div>
@@ -135,8 +129,6 @@ export default function Register() {
     </div>
   );
 }
-
-
 
 const styles = {
   container: {
@@ -215,14 +207,22 @@ const styles = {
     cursor: 'pointer',
     fontWeight: 'bold' as const,
   },
-  footer: {
-    marginTop: '20px',
-    fontSize: '0.8em',
-    textAlign: 'center' as const,
-  },
   error: {
     color: 'red',
     textAlign: 'center' as const,
     marginTop: '10px',
+  },
+  loginLink: {
+    textAlign: 'center' as const,
+    marginTop: '20px',
+  },
+  link: {
+    color: '#3498db',
+    textDecoration: 'none',
+  },
+  footer: {
+    marginTop: '20px',
+    fontSize: '0.8em',
+    textAlign: 'center' as const,
   },
 };
