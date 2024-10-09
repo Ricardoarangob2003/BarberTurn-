@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; // useNavigate para navegar y pasar props
 import { Star, Scissors } from 'lucide-react';
 import axiosInstance from '../../axiosConfig';
 
@@ -13,9 +13,9 @@ interface Barber {
 
 const placeholderBarbers: Barber[] = [
   { id: '1', name: 'Efrain', price: 55000, rating: 5, local: 'barbafina' },
-  { id: '2', name: 'Carlos', price: 40000, rating: 4, local: 'tucorte' },
-  { id: '3', name: 'Ramiro', price: 35000, rating: 3, local: 'barbershop' },
-  { id: '4', name: 'Juan', price: 25000, rating: 2, local: 'urbanbarber' },
+  { id: '2', name: 'Carlos', price: 40000, rating: 4, local: 'barbafina' },
+  { id: '3', name: 'Ramiro', price: 35000, rating: 3, local: 'barbafina' },
+  { id: '4', name: 'Juan', price: 25000, rating: 2, local: 'barbafina' },
   { id: '5', name: 'Miguel', price: 30000, rating: 4, local: 'barbafina' },
 ];
 
@@ -23,6 +23,7 @@ const BarberosDisponibles: React.FC = () => {
   const [barbers, setBarbers] = useState<Barber[]>(placeholderBarbers);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const navigate = useNavigate(); // Hook para navegación
 
   useEffect(() => {
     const fetchBarbers = async () => {
@@ -40,6 +41,11 @@ const BarberosDisponibles: React.FC = () => {
     fetchBarbers();
   }, []);
 
+  // Función para manejar clic en un barbero
+  const handleBarberClick = (barber: Barber) => {
+    navigate(`/Reserva-Turno/${barber.id}`, { state: { barberName: barber.name } }); // Pasar nombre al componente de reserva
+  };
+
   return (
     <div style={styles.container}>
       <div style={styles.content}>
@@ -48,9 +54,9 @@ const BarberosDisponibles: React.FC = () => {
         {error && <div style={styles.error}>{error}</div>}
         <div style={styles.barberList}>
           {barbers.map((barber) => (
-            <Link
+            <div
               key={barber.id}
-              to={`/Reserva-Turno/${barber.id}`}
+              onClick={() => handleBarberClick(barber)} // Manejar clic
               style={styles.barberLink}
             >
               <div style={styles.barberItem}>
@@ -72,7 +78,7 @@ const BarberosDisponibles: React.FC = () => {
                   </div>
                 </div>
               </div>
-            </Link>
+            </div>
           ))}
         </div>
         <div style={styles.footer}>
@@ -122,6 +128,7 @@ const styles = {
   barberLink: {
     textDecoration: 'none',
     color: 'inherit',
+    cursor: 'pointer',
   },
   barberItem: {
     display: 'flex',
@@ -130,11 +137,6 @@ const styles = {
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: '8px',
     transition: 'all 0.3s ease',
-    ':hover': {
-      transform: 'translateY(-5px)',
-      boxShadow: '0 5px 15px rgba(255,255,255,0.1)',
-      backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    },
   },
   profilePicture: {
     width: '60px',

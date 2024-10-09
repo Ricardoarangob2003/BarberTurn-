@@ -1,18 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import axiosInstance from '../../axiosConfig';
 import { LogOut, Calendar, X } from 'lucide-react';
 
 interface User {
   id: string;
   nombre: string;
   apellido: string;
-  email: string;
-}
-
-interface Barber {
-  id: string;
-  nombre: string;
   email: string;
 }
 
@@ -23,9 +16,13 @@ interface Reservation {
   serviciosAdicionales: string[];
 }
 
-const ReservaTurno: React.FC = () => {
+interface ReservaTurnoProps {
+  barberName: string; // Nombre del barbero que recibes como prop
+  barberId: string;   // ID del barbero que recibes como prop
+}
+
+const ReservaTurno: React.FC<ReservaTurnoProps> = ({ barberName, barberId }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [barber, setBarber] = useState<Barber | null>(null);
   const [reservation, setReservation] = useState<Reservation>({
     fecha: '',
     hora: '',
@@ -35,7 +32,6 @@ const ReservaTurno: React.FC = () => {
   const [showSummary, setShowSummary] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { barberId } = useParams<{ barberId: string }>();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -47,20 +43,10 @@ const ReservaTurno: React.FC = () => {
       }
     };
 
-    const fetchBarberData = async () => {
-      if (barberId) {
-        try {
-          const response = await axiosInstance.get(`/barbers/${barberId}`);
-          setBarber(response.data);
-          setReservation(prev => ({ ...prev, barberoId: barberId }));
-        } catch (error) {
-          console.error('Error fetching barber data:', error);
-        }
-      }
-    };
+    // Actualizamos el estado con el barberoId recibido como prop
+    setReservation(prev => ({ ...prev, barberId }));
 
     fetchUserData();
-    fetchBarberData();
   }, [barberId, navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -86,10 +72,11 @@ const ReservaTurno: React.FC = () => {
   const handleConfirmReservation = async () => {
     setIsLoading(true);
     try {
-      await axiosInstance.post('/reservations', reservation);
+      // Aquí harías el POST a la API, pero lo simulamos para esta implementación
+      console.log('Reservación confirmada:', reservation);
       navigate('/reserva-confirmada');
     } catch (error) {
-      console.error('Error creating reservation:', error);
+      console.error('Error creando la reserva:', error);
       setIsLoading(false);
     }
   };
@@ -141,7 +128,7 @@ const ReservaTurno: React.FC = () => {
             <input
               type="text"
               id="barbero"
-              value={barber?.nombre || ''}
+              value={barberName} // Usamos el nombre del barbero que recibimos como prop
               readOnly
               style={styles.input}
             />
@@ -181,8 +168,7 @@ const ReservaTurno: React.FC = () => {
             <h3 style={styles.modalTitle}>Resumen de la Reserva</h3>
             <p><strong>Cliente:</strong> {user?.nombre} {user?.apellido}</p>
             <p><strong>Email del cliente:</strong> {user?.email}</p>
-            <p><strong>Barbero:</strong> {barber?.nombre}</p>
-            <p><strong>Email del barbero:</strong> {barber?.email}</p>
+            <p><strong>Barbero:</strong> {barberName}</p> {/* Mostramos el nombre del barbero aquí */}
             <p><strong>Fecha:</strong> {reservation.fecha}</p>
             <p><strong>Hora:</strong> {reservation.hora}</p>
             <p><strong>Servicios adicionales:</strong> {reservation.serviciosAdicionales.join(', ') || 'Ninguno'}</p>
@@ -200,6 +186,9 @@ const ReservaTurno: React.FC = () => {
     </div>
   );
 };
+
+
+
 
 const styles = {
   container: {
