@@ -1,20 +1,34 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axiosInstance from '../../axiosConfig';
-import axios from 'axios';
+import { Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { api } from '../../axiosConfig';
 
 interface User {
   id: string;
+  username: string;
   email: string;
-  contrasena: string;
   nombre: string;
   apellido: string;
-  // Añade otras propiedades del usuario según sea necesario
+  telefono: string;
+  rol: 'barbero' | 'cliente';
+  local?: string;
 }
 
+// Hardcoded test user
+const testUser: User = {
+  id: 'test123',
+  username: 'usuario_prueba',
+  email: 'prueba@example.com',
+  nombre: 'Usuario',
+  apellido: 'De Prueba',
+  telefono: '1234567890',
+  rol: 'cliente',
+};
+
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [contrasena, setPassword] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -24,36 +38,38 @@ export default function Login() {
     setError('');
     setIsLoading(true);
 
+    // Check for test user first
+    if (username === testUser.username && password === 'password123') {
+      localStorage.setItem('user', JSON.stringify(testUser));
+      localStorage.setItem('token', 'test_token');
+      navigate('/barberias-disponibles');
+      return;
+    }
+
     try {
-      const response = await axiosInstance.get<User[]>('http://localhost:8090/api/cliente');
-      console.log('Users fetched:', response.data);
-      
-      const user = response.data.find(u => u.email === email && u.contrasena === contrasena);
-      
+      const response = await api.post('/cliente/login', { username, contrasena: password });
+      const user = response.data;
+
       if (user) {
-        console.log('Login successful:', user);
-        
-        // Generar un token simple (en producción, esto debería hacerse en el servidor)
+        // Generate a simple token (in production, this should be done on the server)
         const token = btoa(user.id + ':' + Date.now());
-        
-        // Almacenar el token en localStorage
+
+        // Store token and user data in localStorage
         localStorage.setItem('token', token);
-        
-        
-        localStorage.setItem('user', JSON.stringify({ id: user.id, email: user.email, nombre: user.nombre,
-          apellido: user.apellido }));
-        
-        // Redirigir al usuario a la página principal
-        navigate('/barberias-disponibles');
+        localStorage.setItem('user', JSON.stringify(user));
+
+        // Redirect based on user role
+        if (user.rol === 'barbero') {
+          navigate('/dashboard-barbero');
+        } else {
+          navigate('/barberias-disponibles');
+        }
       } else {
         setError('Credenciales inválidas. Por favor, intenta de nuevo.');
       }
     } catch (err) {
-      if (axios.isAxiosError(err) && err.response) {
-        setError(err.response.data.message || 'Error al iniciar sesión. Por favor, intenta de nuevo.');
-      } else {
-        setError('Error al iniciar sesión. Por favor, intenta de nuevo más tarde.');
-      }
+      console.error('Error during login:', err);
+      setError('Error al iniciar sesión. Por favor, intenta de nuevo.');
     } finally {
       setIsLoading(false);
     }
@@ -65,35 +81,50 @@ export default function Login() {
         <h1 style={styles.title}>BarberTurn</h1>
         <h2 style={styles.subtitle}>Iniciar Sesión</h2>
         <form onSubmit={handleSubmit} style={styles.form}>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Correo electrónico"
-            style={styles.input}
-            required
-          />
-          <input
-            type="password"
-            value={contrasena}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Contraseña"
-            style={styles.input}
-            required
-          />
+          <div style={styles.inputGroup}>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Nombre de usuario"
+              style={styles.input}
+              required
+            />
+          </div>
+          <div style={styles.inputGroup}>
+            <input
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Contraseña"
+              style={styles.input}
+              required
+            />
+            <button
+              type="button"
+              style={styles.eyeButton}
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
           <Link to="/recuperar-contrasena" style={styles.forgotPassword}>¿Olvidaste tu contraseña?</Link>
           <button type="submit" style={styles.button} disabled={isLoading}>
             {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
           </button>
         </form>
-        {error && <p style={styles.error}>{error}</p>}
+        {error && (
+          <div style={styles.errorNotification}>
+            <AlertCircle size={20} />
+            <span>{error}</span>
+          </div>
+        )}
         <p style={styles.footer}>
           ¿No tienes cuenta? <Link to="/registro" style={styles.registerLink}>Regístrate aquí</Link>
         </p>
         <p style={styles.footer}>© 2024 BarberTurn. Todos los derechos reservados.</p>
       </div>
     </div>
-    
   );
 }
 
@@ -103,13 +134,13 @@ const styles = {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    background: 'linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url("/assets/imgs/background-gallery.jpg")',
+    backgroundImage: `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://hebbkx1anhila5yf.public.blob.vercel-storage.com/background-gallery-tVsfhFLAU6Jg8Wx0HZ0WN8YsxgZbMP.jpg')`,
     backgroundSize: 'cover',
   },
   loginBox: {
     width: '300px',
     padding: '40px',
-    background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.5) 100%)',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     borderRadius: '10px',
     textAlign: 'center' as const,
     color: 'white',
@@ -127,12 +158,27 @@ const styles = {
     flexDirection: 'column' as const,
     gap: '15px',
   },
+  inputGroup: {
+    position: 'relative' as const,
+  },
   input: {
+    width: '100%',
     padding: '10px',
+    paddingRight: '40px',
     borderRadius: '5px',
     border: 'none',
     background: 'rgba(255,255,255,0.1)',
     color: 'white',
+  },
+  eyeButton: {
+    position: 'absolute' as const,
+    right: '10px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    background: 'none',
+    border: 'none',
+    color: 'white',
+    cursor: 'pointer',
   },
   forgotPassword: {
     color: 'white',
@@ -165,7 +211,10 @@ const styles = {
     textDecoration: 'none',
     fontWeight: 'bold',
   },
-  error: {
+  errorNotification: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
     color: '#ff6b6b',
     marginTop: '10px',
     fontSize: '0.9em',

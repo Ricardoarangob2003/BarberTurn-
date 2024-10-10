@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { LogOut, Calendar, X } from 'lucide-react';
 
 interface User {
@@ -16,12 +16,7 @@ interface Reservation {
   serviciosAdicionales: string[];
 }
 
-interface ReservaTurnoProps {
-  barberName: string; // Nombre del barbero que recibes como prop
-  barberId: string;   // ID del barbero que recibes como prop
-}
-
-const ReservaTurno: React.FC<ReservaTurnoProps> = ({ barberName, barberId }) => {
+const ReservaTurno: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [reservation, setReservation] = useState<Reservation>({
     fecha: '',
@@ -31,23 +26,30 @@ const ReservaTurno: React.FC<ReservaTurnoProps> = ({ barberName, barberId }) => 
   });
   const [showSummary, setShowSummary] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [barberName, setBarberName] = useState(''); // Guardar el nombre del barbero
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      const userData = localStorage.getItem('user');
-      if (userData) {
-        setUser(JSON.parse(userData));
-      } else {
-        navigate('/login');
-      }
-    };
+    // Recuperar el barbero seleccionado del localStorage
+    const storedBarber = localStorage.getItem('selectedBarber');
+    
+    if (storedBarber) {
+      const barber = JSON.parse(storedBarber);
+      setReservation(prev => ({
+        ...prev,
+        barberId: barber.id, // Asignar el id del barbero
+      }));
+      setBarberName(barber.name); // Asignar el nombre del barbero
+    }
 
-    // Actualizamos el estado con el barberoId recibido como prop
-    setReservation(prev => ({ ...prev, barberId }));
-
-    fetchUserData();
-  }, [barberId, navigate]);
+    // Recuperar los datos del usuario
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      setUser(JSON.parse(userData));
+    } else {
+      navigate('/login');
+    }
+  }, [navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -72,7 +74,6 @@ const ReservaTurno: React.FC<ReservaTurnoProps> = ({ barberName, barberId }) => 
   const handleConfirmReservation = async () => {
     setIsLoading(true);
     try {
-      // Aquí harías el POST a la API, pero lo simulamos para esta implementación
       console.log('Reservación confirmada:', reservation);
       navigate('/reserva-confirmada');
     } catch (error) {
@@ -128,7 +129,7 @@ const ReservaTurno: React.FC<ReservaTurnoProps> = ({ barberName, barberId }) => 
             <input
               type="text"
               id="barbero"
-              value={barberName} // Usamos el nombre del barbero que recibimos como prop
+              value={barberName} // Usamos el nombre del barbero recuperado
               readOnly
               style={styles.input}
             />

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Star, Scissors } from 'lucide-react';
 import axiosInstance from '../../axiosConfig';
 
@@ -23,6 +23,7 @@ const BarberosDisponibles: React.FC = () => {
   const [barbers, setBarbers] = useState<Barber[]>(placeholderBarbers);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchBarbers = async () => {
@@ -40,6 +41,11 @@ const BarberosDisponibles: React.FC = () => {
     fetchBarbers();
   }, []);
 
+  const handleBarberSelect = (barber: Barber) => {
+    localStorage.setItem('selectedBarber', JSON.stringify(barber));
+    navigate(`/Reserva-Turno/${barber.id}`);
+  };
+
   return (
     <div style={styles.container}>
       <div style={styles.content}>
@@ -48,31 +54,29 @@ const BarberosDisponibles: React.FC = () => {
         {error && <div style={styles.error}>{error}</div>}
         <div style={styles.barberList}>
           {barbers.map((barber) => (
-            <Link
+            <div
               key={barber.id}
-              to={`/Reserva-Turno/${barber.id}`}
-              style={styles.barberLink}
+              onClick={() => handleBarberSelect(barber)}
+              style={styles.barberItem}
             >
-              <div style={styles.barberItem}>
-                <div style={styles.profilePicture}>
-                  <Scissors size={30} color="white" />
-                </div>
-                <div style={styles.barberInfo}>
-                  <h3 style={styles.barberName}>{barber.name}</h3>
-                  <p style={styles.barberPrice}>{barber.price.toLocaleString()} COP</p>
-                  <div style={styles.stars}>
-                    {[...Array(5)].map((_, index) => (
-                      <Star
-                        key={index}
-                        size={16}
-                        fill={index < barber.rating ? 'gold' : 'none'}
-                        stroke={index < barber.rating ? 'gold' : 'gray'}
-                      />
-                    ))}
-                  </div>
+              <div style={styles.profilePicture}>
+                <Scissors size={30} color="white" />
+              </div>
+              <div style={styles.barberInfo}>
+                <h3 style={styles.barberName}>{barber.name}</h3>
+                <p style={styles.barberPrice}>{barber.price.toLocaleString()} COP</p>
+                <div style={styles.stars}>
+                  {[...Array(5)].map((_, index) => (
+                    <Star
+                      key={index}
+                      size={16}
+                      fill={index < barber.rating ? 'gold' : 'none'}
+                      stroke={index < barber.rating ? 'gold' : 'gray'}
+                    />
+                  ))}
                 </div>
               </div>
-            </Link>
+            </div>
           ))}
         </div>
         <div style={styles.footer}>
@@ -119,10 +123,6 @@ const styles = {
     flexDirection: 'column' as const,
     gap: '15px',
   },
-  barberLink: {
-    textDecoration: 'none',
-    color: 'inherit',
-  },
   barberItem: {
     display: 'flex',
     alignItems: 'center',
@@ -130,6 +130,7 @@ const styles = {
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: '8px',
     transition: 'all 0.3s ease',
+    cursor: 'pointer',
     ':hover': {
       transform: 'translateY(-5px)',
       boxShadow: '0 5px 15px rgba(255,255,255,0.1)',
