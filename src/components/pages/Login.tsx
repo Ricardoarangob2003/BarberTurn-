@@ -14,7 +14,7 @@ interface User {
   local?: string;
 }
 
-// Hardcoded test user
+// Usuario de prueba hardcodeado
 const testUser: User = {
   id: 'test123',
   username: 'usuario_prueba',
@@ -38,27 +38,48 @@ export default function Login() {
     setError('');
     setIsLoading(true);
 
-    // Check for test user first
+    // Check for hardcoded test user first
     if (username === testUser.username && password === 'password123') {
       localStorage.setItem('user', JSON.stringify(testUser));
-      localStorage.setItem('token', 'test_token');
       navigate('/barberias-disponibles');
       return;
     }
 
     try {
-      const response = await api.post('/cliente/login', { username, contrasena: password });
-      const user = response.data;
+      // Verificar credenciales en ambas tablas (barberos y clientes)
+      let response = await api.post('/barbero/credenciales', { username, contrasena: password });
+      let user;
+
+      if (response.data) {
+        user = response.data;
+        user.rol = 'barbero';
+      } else {
+        // Si no es barbero, verificar en la tabla de clientes
+        response = await api.post('/cliente/credenciales', { username, contrasena: password });
+        if (response.data) {
+          user = response.data;
+          user.rol = 'cliente';
+        }
+      }
 
       if (user) {
-        // Generate a simple token (in production, this should be done on the server)
-        const token = btoa(user.id + ':' + Date.now());
+        // Buscar los datos personales del usuario en la tabla correspondiente
+        let personalData;
+        if (user.rol === 'barbero') {
+          personalData = await api.get(`/barbero/datos-personales/${user.id}`);
+        } else {
+          personalData = await api.get(`/cliente/datos-personales/${user.id}`);
+        }
 
-        // Store token and user data in localStorage
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(user));
+        const userData = {
+          ...personalData.data,
+          rol: user.rol,
+        };
 
-        // Redirect based on user role
+        // Guardar los datos en localStorage
+        localStorage.setItem('user', JSON.stringify(userData));
+
+        // Redirigir según el rol
         if (user.rol === 'barbero') {
           navigate('/dashboard-barbero');
         } else {

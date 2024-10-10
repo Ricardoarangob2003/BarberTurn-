@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import axiosInstance from '../../axiosConfig'; // Configuración de Axios
 
 interface FormData {
   nombre: string;
@@ -26,25 +27,58 @@ export default function Registro() {
     const { name, value } = e.target;
     setFormData(prevState => ({
       ...prevState,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleRolSelect = (rol: 'barbero' | 'cliente') => {
     setFormData(prevState => ({
       ...prevState,
-      rol: rol
+      rol: rol,
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!formData.rol) {
       setError('Por favor, seleccione un tipo de registro');
       return;
     }
-    localStorage.setItem('registroTemporal', JSON.stringify(formData));
-    navigate('/Registro-Credenciales');
+
+    try {
+      let response;
+      // POST a la tabla correspondiente según el rol
+      if (formData.rol === 'barbero') {
+        response = await axiosInstance.post('/barberos', {
+          nombre: formData.nombre,
+          apellido: formData.apellido,
+          telefono: formData.telefono,
+          email: formData.email,
+          local: formData.local, // Solo se requiere cuando es barbero
+        });
+      } else if (formData.rol === 'cliente') {
+        response = await axiosInstance.post('/clientes', {
+          nombre: formData.nombre,
+          apellido: formData.apellido,
+          telefono: formData.telefono,
+          email: formData.email,
+        });
+      }
+
+      // Asumiendo que el ID se devuelve en la respuesta
+      const userId = response.data.id;
+
+      // Guardar el rol y el ID en localStorage
+      localStorage.setItem('userId', userId);
+      localStorage.setItem('rol', formData.rol);
+
+      // Redirigir a la siguiente vista
+      navigate('/Registro-Credenciales');
+    } catch (err) {
+      console.error('Error al guardar los datos:', err);
+      setError('Ocurrió un error al registrarse. Intente de nuevo más tarde.');
+    }
   };
 
   return (
@@ -120,7 +154,10 @@ export default function Registro() {
         </form>
         {error && <p style={styles.error}>{error}</p>}
         <p style={styles.loginLink}>
-          ¿Ya tienes una cuenta? <Link to="/iniciar-sesion" style={styles.link}>Iniciar sesión</Link>
+          ¿Ya tienes una cuenta?{' '}
+          <Link to="/iniciar-sesion" style={styles.link}>
+            Iniciar sesión
+          </Link>
         </p>
         <div style={styles.footer}>
           © 2024 BarberTurn. Todos los derechos reservados.

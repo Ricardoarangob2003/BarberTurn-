@@ -38,14 +38,25 @@ export default function RegistroCredenciales() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const storedData = localStorage.getItem('registroTemporal');
-    if (storedData) {
-      setRegistroData(JSON.parse(storedData));
+    const storedId = localStorage.getItem('userId');
+    const storedRol = localStorage.getItem('rol');
+  
+    if (storedId && storedRol) {
+      // Si existen, se establecen los valores de registroData directamente
+      setRegistroData({
+        nombre: '',
+        apellido: '',
+        telefono: '',
+        email: '',
+        local: '',
+        rol: storedRol as 'barbero' | 'cliente',  // Establecer el rol
+      });
     } else {
+      // Redirigir si no se encuentra el ID o rol
       navigate('/registro');
     }
   }, [navigate]);
-
+  
   useEffect(() => {
     const timer = setTimeout(() => {
       setNotification({ message: '', type: '' });
@@ -76,6 +87,7 @@ export default function RegistroCredenciales() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!validatePassword()) {
       setNotification({
         message: '¡Ups! Tu contraseña no cumple con todos los requisitos de seguridad. Por favor, revisa los criterios y ajústala.',
@@ -83,6 +95,7 @@ export default function RegistroCredenciales() {
       });
       return;
     }
+
     if (password !== confirmPassword) {
       setNotification({
         message: '¡Vaya! Las contraseñas no coinciden. ¿Podrías verificarlas de nuevo?',
@@ -90,7 +103,9 @@ export default function RegistroCredenciales() {
       });
       return;
     }
-    if (!registroData) {
+
+    const storedUserId = localStorage.getItem('userId');  // Recuperar el ID del usuario
+    if (!storedUserId) {
       setNotification({
         message: 'Lo siento, no se encontraron los datos de registro. Por favor, vuelve al paso anterior.',
         type: 'error'
@@ -99,17 +114,21 @@ export default function RegistroCredenciales() {
     }
 
     try {
-      const response = await api.post('/registro', {
-        ...registroData,
+      const response = await api.post('/registro-credenciales', {
+        userId: storedUserId,  // Incluir el ID del usuario en la solicitud
         username,
-        password
+        password,
+        rol: registroData?.rol  // Incluir el rol en la solicitud
       });
+
       console.log('Registro exitoso:', response.data);
-      localStorage.removeItem('registroTemporal');
+      localStorage.removeItem('userId');
+      localStorage.removeItem('rol');
       setNotification({
         message: '¡Genial! Tu registro se ha completado con éxito. Te estamos redirigiendo al inicio de sesión.',
         type: 'success'
       });
+
       setTimeout(() => navigate('/iniciar-sesion'), 3000);
     } catch (err) {
       setNotification({

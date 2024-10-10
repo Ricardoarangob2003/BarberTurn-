@@ -71,16 +71,7 @@ const ReservaTurno: React.FC = () => {
     setShowSummary(true);
   };
 
-  const handleConfirmReservation = async () => {
-    setIsLoading(true);
-    try {
-      console.log('Reservación confirmada:', reservation);
-      navigate('/reserva-confirmada');
-    } catch (error) {
-      console.error('Error creando la reserva:', error);
-      setIsLoading(false);
-    }
-  };
+ 
 
   const handleLogout = () => {
     localStorage.removeItem('user');
@@ -177,9 +168,7 @@ const ReservaTurno: React.FC = () => {
               <button onClick={() => setShowSummary(false)} style={styles.editButton}>
                 Editar
               </button>
-              <button onClick={handleConfirmReservation} style={styles.confirmButton} disabled={isLoading}>
-                {isLoading ? 'Confirmando...' : 'Confirmar Reserva'}
-              </button>
+             
             </div>
           </div>
         </div>
