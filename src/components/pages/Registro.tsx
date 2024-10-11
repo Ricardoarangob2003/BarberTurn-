@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axiosInstance from '../../axiosConfig'; // Configuración de Axios
+import { api } from '../../axiosConfig';
 
 interface FormData {
   nombre: string;
@@ -48,36 +48,50 @@ export default function Registro() {
 
     try {
       let response;
-      // POST a la tabla correspondiente según el rol
+      const dataToSend = {
+        nombre: formData.nombre,
+        apellido: formData.apellido,
+        telefono: formData.telefono,
+        email: formData.email,
+        rol: formData.rol, // Añadimos el rol a los datos que se envían
+        ...(formData.rol === 'barbero' && { local: formData.local }),
+      };
+
       if (formData.rol === 'barbero') {
-        response = await axiosInstance.post('/barberos', {
-          nombre: formData.nombre,
-          apellido: formData.apellido,
-          telefono: formData.telefono,
-          email: formData.email,
-          local: formData.local, // Solo se requiere cuando es barbero
-        });
-      } else if (formData.rol === 'cliente') {
-        response = await axiosInstance.post('/clientes', {
-          nombre: formData.nombre,
-          apellido: formData.apellido,
-          telefono: formData.telefono,
-          email: formData.email,
-        });
+        response = await api.post('/barberos/post', dataToSend);
+      } else {
+        response = await api.post('/cliente/post', dataToSend);
       }
 
-      // Asumiendo que el ID se devuelve en la respuesta
+      // Asumiendo que el ID se devuelve en la respuesta como 'id'
       const userId = response.data.id;
 
       // Guardar el rol y el ID en localStorage
       localStorage.setItem('userId', userId);
       localStorage.setItem('rol', formData.rol);
 
+      // Guardar toda la información del formulario en localStorage
+      localStorage.setItem('registroTemporal', JSON.stringify({
+        ...formData,
+        id: userId,
+      }));
+
       // Redirigir a la siguiente vista
       navigate('/Registro-Credenciales');
     } catch (err) {
       console.error('Error al guardar los datos:', err);
-      setError('Ocurrió un error al registrarse. Intente de nuevo más tarde.');
+      if (err.response) {
+        console.error('Error data:', err.response.data);
+        console.error('Error status:', err.response.status);
+        console.error('Error headers:', err.response.headers);
+        setError(`Error del servidor: ${err.response.status}`);
+      } else if (err.request) {
+        console.error('Error request:', err.request);
+        setError('No se recibió respuesta del servidor');
+      } else {
+        console.error('Error message:', err.message);
+        setError('Error al configurar la solicitud');
+      }
     }
   };
 

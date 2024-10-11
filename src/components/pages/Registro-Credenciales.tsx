@@ -4,6 +4,7 @@ import { Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react';
 import { api } from '../../axiosConfig';
 
 interface RegistroData {
+  id: string;
   nombre: string;
   apellido: string;
   telefono: string;
@@ -38,22 +39,28 @@ export default function RegistroCredenciales() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const storedId = localStorage.getItem('userId');
-    const storedRol = localStorage.getItem('rol');
-  
-    if (storedId && storedRol) {
-      // Si existen, se establecen los valores de registroData directamente
-      setRegistroData({
-        nombre: '',
-        apellido: '',
-        telefono: '',
-        email: '',
-        local: '',
-        rol: storedRol as 'barbero' | 'cliente',  // Establecer el rol
-      });
+    const storedData = localStorage.getItem('registroTemporal');
+    if (storedData) {
+      try {
+        const parsedData = JSON.parse(storedData);
+        if (!parsedData.id) {
+          throw new Error('ID no encontrado en los datos almacenados');
+        }
+        setRegistroData(parsedData);
+      } catch (error) {
+        console.error('Error al parsear los datos del registro:', error);
+        setNotification({
+          message: 'Error al recuperar los datos del registro. Por favor, vuelve al paso anterior.',
+          type: 'error'
+        });
+        setTimeout(() => navigate('/registro'), 3000);
+      }
     } else {
-      // Redirigir si no se encuentra el ID o rol
-      navigate('/registro');
+      setNotification({
+        message: 'No se encontraron datos del registro. Redirigiendo al inicio del registro.',
+        type: 'error'
+      });
+      setTimeout(() => navigate('/registro'), 3000);
     }
   }, [navigate]);
   
@@ -104,26 +111,24 @@ export default function RegistroCredenciales() {
       return;
     }
 
-    const storedUserId = localStorage.getItem('userId');  // Recuperar el ID del usuario
-    if (!storedUserId) {
+    if (!registroData || !registroData.id || !registroData.rol) {
       setNotification({
-        message: 'Lo siento, no se encontraron los datos de registro. Por favor, vuelve al paso anterior.',
+        message: 'Lo siento, no se encontraron los datos de registro completos. Por favor, vuelve al paso anterior.',
         type: 'error'
       });
       return;
     }
 
     try {
-      const response = await api.post('/registro-credenciales', {
-        userId: storedUserId,  // Incluir el ID del usuario en la solicitud
+      const endpoint = registroData.rol === 'barbero' ? '/user/barbero/post' : 'user/cliente/post';
+      const response = await api.post(endpoint, {
+        ...registroData,
         username,
         password,
-        rol: registroData?.rol  // Incluir el rol en la solicitud
       });
 
       console.log('Registro exitoso:', response.data);
-      localStorage.removeItem('userId');
-      localStorage.removeItem('rol');
+      localStorage.removeItem('registroTemporal');
       setNotification({
         message: '¡Genial! Tu registro se ha completado con éxito. Te estamos redirigiendo al inicio de sesión.',
         type: 'success'
@@ -131,6 +136,7 @@ export default function RegistroCredenciales() {
 
       setTimeout(() => navigate('/iniciar-sesion'), 3000);
     } catch (err) {
+      console.error('Error durante el registro:', err);
       setNotification({
         message: 'Oh no, ha ocurrido un error durante el registro. ¿Podrías intentarlo de nuevo?',
         type: 'error'
@@ -247,31 +253,28 @@ const styles = {
     color: 'white',
   },
   title: {
-    fontSize: '2.5em',
-    textAlign: 'center' as const,
-    marginBottom: '10px',
-  },
-  subtitle: {
-    fontSize: '1.5em',
+    fontSize: '2.5rem',
     textAlign: 'center' as const,
     marginBottom: '20px',
+  },
+  subtitle: {
+    fontSize: '1.25rem',
+    textAlign: 'center' as const,
+    marginBottom: '30px',
   },
   form: {
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: '15px',
   },
   inputGroup: {
     position: 'relative' as const,
+    marginBottom: '20px',
   },
   input: {
     width: '100%',
     padding: '10px',
-    paddingRight: '40px',
     borderRadius: '5px',
-    border: 'none',
-    background: 'rgba(255, 255, 255, 0.1)',
-    color: 'white',
+    border: '1px solid #ddd',
   },
   eyeButton: {
     position: 'absolute' as const,
@@ -280,56 +283,53 @@ const styles = {
     transform: 'translateY(-50%)',
     background: 'none',
     border: 'none',
-    color: 'white',
     cursor: 'pointer',
+    color: '#ddd',
   },
   passwordStrength: {
-    fontSize: '0.9em',
-    color: '#aaa',
+    marginBottom: '20px',
   },
   validCriteria: {
-    color: '#4CAF50',
+    color: 'lightgreen',
   },
   invalidCriteria: {
-    color: '#aaa',
+    color: 'lightcoral',
   },
   submitButton: {
     padding: '10px',
-    borderRadius: '5px',
+    backgroundColor: '#007bff',
+    color: '#fff',
     border: 'none',
-    background: 'white',
-    color: 'black',
+    borderRadius: '5px',
     cursor: 'pointer',
-    fontWeight: 'bold' as const,
+    fontSize: '1rem',
   },
   errorNotification: {
     display: 'flex',
     alignItems: 'center',
-    gap: '10px',
     padding: '10px',
-    backgroundColor: 'rgba(255, 0, 0, 0.1)',
-    border: '1px solid #ff0000',
+    backgroundColor: 'lightcoral',
+    color: 'white',
     borderRadius: '5px',
-    marginBottom: '15px',
+    marginBottom: '20px',
   },
   successNotification: {
     display: 'flex',
     alignItems: 'center',
-    gap: '10px',
     padding: '10px',
-    backgroundColor: 'rgba(0, 255, 0, 0.1)',
-    border: '1px solid #00ff00',
+    backgroundColor: 'lightgreen',
+    color: 'black',
     borderRadius: '5px',
-    marginBottom: '15px',
+    marginBottom: '20px',
   },
   footer: {
     marginTop: '20px',
-    fontSize: '0.8em',
     textAlign: 'center' as const,
+    fontSize: '0.8rem',
   },
   loading: {
     color: 'white',
-    fontSize: '1.2em',
+    fontSize: '1.5rem',
     textAlign: 'center' as const,
   },
 };
