@@ -4,26 +4,21 @@ import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { api } from '../../axiosConfig';
 
 interface User {
-  id: string;
+  password: string;
   username: string;
-  email: string;
-  nombre: string;
-  apellido: string;
-  telefono: string;
-  rol: 'barbero' | 'cliente';
-  local?: string;
+  id: string;
+  usuario: string;
+  contrasena: string;
 }
 
-// Usuario de prueba hardcodeado
-const testUser: User = {
-  id: 'test123',
-  username: 'usuario_prueba',
-  email: 'prueba@example.com',
-  nombre: 'Usuario',
-  apellido: 'De Prueba',
-  telefono: '1234567890',
-  rol: 'cliente',
-};
+interface UserData {
+  id: string;
+  nombre: string;
+  apellido: string;
+  correo: string;
+  telefono: string;
+  local?: string;
+}
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -38,58 +33,68 @@ export default function Login() {
     setError('');
     setIsLoading(true);
 
-    // Check for hardcoded test user first
-    if (username === testUser.username && password === 'password123') {
-      localStorage.setItem('user', JSON.stringify(testUser));
-      navigate('/barberias-disponibles');
-      return;
-    }
-
     try {
-      // Verificar credenciales en ambas tablas (barberos y clientes)
-      let response = await api.post('/barbero/credenciales', { username, contrasena: password });
-      let user;
+      // Intentar iniciar sesión como barbero
+      const barberoResponse = await api.get('http://localhost:8090/api/user/barbero');
+      console.log('Respuesta completa de barbero:', barberoResponse); // Verificar respuesta completa
+      console.log('Datos de barbero:', barberoResponse.data); // Verificar datos específicos
+      let user = barberoResponse.data.find(
+        (u: User) => u.username === username.trim() && u.password === password.trim()
+      );
+      let rol = 'barbero';
 
-      if (response.data) {
-        user = response.data;
-        user.rol = 'barbero';
-      } else {
-        // Si no es barbero, verificar en la tabla de clientes
-        response = await api.post('/cliente/credenciales', { username, contrasena: password });
-        if (response.data) {
-          user = response.data;
-          user.rol = 'cliente';
-        }
+      // Si no se encuentra como barbero, intentar como cliente
+      if (!user) {
+        const clienteResponse = await api.get('http://localhost:8090/api/user/cliente');
+        console.log('Respuesta completa de cliente:', clienteResponse); // Verificar respuesta completa
+        console.log('Datos de cliente:', clienteResponse.data); // Verificar datos específicos
+        user = clienteResponse.data.find(
+          (u: User) => u.username === username.trim() && u.password === password.trim()
+        );
+        rol = 'cliente';
       }
 
       if (user) {
-        // Buscar los datos personales del usuario en la tabla correspondiente
-        let personalData;
-        if (user.rol === 'barbero') {
-          personalData = await api.get(`/barbero/datos-personales/${user.id}`);
+        // Obtener los datos personales del usuario según el rol
+        let userData: UserData | undefined;
+        if (rol === 'barbero') {
+          const response = await api.get('http://localhost:8090/api/barberos');
+          console.log('Datos de barbero en tabla barberos:', response.data); // Verificar datos específicos
+          userData = response.data.find((data: UserData) => data.id === user.id);
         } else {
-          personalData = await api.get(`/cliente/datos-personales/${user.id}`);
+          const response = await api.get('http://localhost:8090/api/cliente');
+          console.log('Datos de cliente en tabla clientes:', response.data); // Verificar datos específicos
+          userData = response.data.find((data: UserData) => data.id === user.id);
         }
 
-        const userData = {
-          ...personalData.data,
-          rol: user.rol,
-        };
+        if (userData) {
+          const userInfo = {
+            id: userData.id,
+            rol: rol,
+            nombre: userData.nombre,
+            apellido: userData.apellido,
+            correo: userData.correo,
+            telefono: userData.telefono,
+            ...(rol === 'barbero' && { local: userData.local })
+          };
 
-        // Guardar los datos en localStorage
-        localStorage.setItem('user', JSON.stringify(userData));
+          // Guardar los datos en localStorage
+          localStorage.setItem('user', JSON.stringify(userInfo));
 
-        // Redirigir según el rol
-        if (user.rol === 'barbero') {
-          navigate('/dashboard-barbero');
+          // Redirigir según el rol
+          if (rol === 'barbero') {
+            navigate('/dashboard-barbero');
+          } else {
+            navigate('/barberias-disponibles');
+          }
         } else {
-          navigate('/barberias-disponibles');
+          setError('No se encontraron los datos personales del usuario.');
         }
       } else {
         setError('Credenciales inválidas. Por favor, intenta de nuevo.');
       }
     } catch (err) {
-      console.error('Error during login:', err);
+      console.error('Error durante el inicio de sesión:', err);
       setError('Error al iniciar sesión. Por favor, intenta de nuevo.');
     } finally {
       setIsLoading(false);
@@ -114,7 +119,7 @@ export default function Login() {
           </div>
           <div style={styles.inputGroup}>
             <input
-              type={showPassword ? "text" : "password"}
+              type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Contraseña"

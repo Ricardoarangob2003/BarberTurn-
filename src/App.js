@@ -13,6 +13,7 @@ import Barberostucorte from './components/pages/BarberosDisponibles-Tucorte.tsx'
 import Barberosbarbershop from './components/pages/BarberosDisponibles-Barbershop.tsx';
 import ReservaTurno from './components/pages/ReservaTurno.tsx';
 import RegistroCredenciales from './components/pages/Registro-Credenciales.tsx';
+import DashboardBarbero from './components/pages/dashboard-barbero.tsx';
 
 import './App.css';
 
@@ -34,6 +35,7 @@ function App() {
           <Route path="/Barberos-Disponibles/barbershop" element={<Barberosbarbershop />} />
           <Route path="/Reserva-Turno/:barberId" element={<ReservaTurno />} />
           <Route path="/Registro-Credenciales" element={<RegistroCredenciales />} />
+          <Route path="/Dashboard-Barbero" element={<DashboardBarbero />} />
         </Routes>
       </div>
     </Router>
