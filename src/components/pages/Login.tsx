@@ -15,7 +15,7 @@ interface UserData {
   id: string;
   nombre: string;
   apellido: string;
-  correo: string;
+  email: string;
   telefono: string;
   local?: string;
 }
@@ -73,7 +73,7 @@ export default function Login() {
             rol: rol,
             nombre: userData.nombre,
             apellido: userData.apellido,
-            correo: userData.correo,
+            email: userData.email,
             telefono: userData.telefono,
             ...(rol === 'barbero' && { local: userData.local })
           };

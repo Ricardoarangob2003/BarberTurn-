@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Calendar, X } from 'lucide-react';
+import { LogOut, Calendar, X, ChevronDown, ChevronUp, Check } from 'lucide-react';
+import axiosInstance from '../../axiosConfig';
 
 interface User {
   id: string;
@@ -16,6 +17,12 @@ interface Reservation {
   serviciosAdicionales: string[];
 }
 
+interface Notification {
+  show: boolean;
+  message: string;
+  type: 'success' | 'error';
+}
+
 const ReservaTurno: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [reservation, setReservation] = useState<Reservation>({
@@ -26,28 +33,35 @@ const ReservaTurno: React.FC = () => {
   });
   const [showSummary, setShowSummary] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [barberName, setBarberName] = useState(''); // Guardar el nombre del barbero
+  const [barberName, setBarberName] = useState('');
+  const [barberEmail, setBarberEmail] = useState('');
+  const [showServices, setShowServices] = useState(false);
+  const [notification, setNotification] = useState<Notification>({ show: false, message: '', type: 'success' });
   const navigate = useNavigate();
 
+  const serviciosAdicionales = [ 'Tinte', 'Mascarilla',  'Depilación de cejas'];
+
   useEffect(() => {
-    // Recuperar el barbero seleccionado del localStorage
-    const storedBarber = localStorage.getItem('selectedBarber');
+    const storedBarberName = localStorage.getItem('selectedBarberName');
+    const storedBarberEmail = localStorage.getItem('selectedBarberEmail');
     
-    if (storedBarber) {
-      const barber = JSON.parse(storedBarber);
+    
+    if (storedBarberName && storedBarberEmail ) {
+      setBarberName(storedBarberName);
+      setBarberEmail(storedBarberEmail);
       setReservation(prev => ({
         ...prev,
-        barberId: barber.id, // Asignar el id del barbero
+        
       }));
-      setBarberName(barber.name); // Asignar el nombre del barbero
+    } else {
+      navigate('/barberos-disponibles/barbafina');
     }
 
-    // Recuperar los datos del usuario
     const userData = localStorage.getItem('user');
     if (userData) {
       setUser(JSON.parse(userData));
     } else {
-      navigate('/login');
+      navigate('/iniciar-sesion');
     }
   }, [navigate]);
 
@@ -56,27 +70,37 @@ const ReservaTurno: React.FC = () => {
     setReservation(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value, checked } = e.target;
+  const handleServiceToggle = (service: string) => {
     setReservation(prev => ({
       ...prev,
-      serviciosAdicionales: checked
-        ? [...prev.serviciosAdicionales, value]
-        : prev.serviciosAdicionales.filter(service => service !== value),
+      serviciosAdicionales: prev.serviciosAdicionales.includes(service)
+        ? prev.serviciosAdicionales.filter(s => s !== service)
+        : [...prev.serviciosAdicionales, service],
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setShowSummary(true);
   };
 
- 
+  const confirmReservation = async () => {
+    setIsLoading(true);
+    try {
+      await axiosInstance.post('/reservations', reservation);
+      setNotification({ show: true, message: '¡Reserva confirmada con éxito!', type: 'success' });
+      setTimeout(() => navigate('/mis-turnos'), 2000);
+    } catch (error) {
+      setNotification({ show: true, message: 'Error al confirmar la reserva. Intente nuevamente.', type: 'error' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
-    navigate('/login');
+    navigate('/iniciar-sesion');
   };
 
   return (
@@ -120,27 +144,33 @@ const ReservaTurno: React.FC = () => {
             <input
               type="text"
               id="barbero"
-              value={barberName} // Usamos el nombre del barbero recuperado
+              value={barberName}
               readOnly
               style={styles.input}
             />
           </div>
           <div style={styles.formGroup}>
-            <label>Servicios adicionales:</label>
-            <div style={styles.checkboxGroup}>
-              {['Afeitado', 'Tinte', 'Mascarilla'].map(service => (
-                <label key={service} style={styles.checkboxLabel}>
-                  <input
-                    type="checkbox"
-                    name="serviciosAdicionales"
-                    value={service}
-                    checked={reservation.serviciosAdicionales.includes(service)}
-                    onChange={handleCheckboxChange}
-                  />
-                  {service}
-                </label>
-              ))}
-            </div>
+            <button 
+              type="button" 
+              onClick={() => setShowServices(!showServices)}
+              style={styles.servicesToggle}
+            >
+              Servicios adicionales {showServices ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            </button>
+            {showServices && (
+              <div style={styles.servicesList}>
+                {serviciosAdicionales.map(service => (
+                  <div 
+                    key={service} 
+                    onClick={() => handleServiceToggle(service)}
+                    style={styles.serviceItem}
+                  >
+                    <span>{service}</span>
+                    {reservation.serviciosAdicionales.includes(service) && <Check size={20} color="green" />}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
           <button type="submit" style={styles.button}>Reservar Turno</button>
         </form>
@@ -160,7 +190,8 @@ const ReservaTurno: React.FC = () => {
             <h3 style={styles.modalTitle}>Resumen de la Reserva</h3>
             <p><strong>Cliente:</strong> {user?.nombre} {user?.apellido}</p>
             <p><strong>Email del cliente:</strong> {user?.email}</p>
-            <p><strong>Barbero:</strong> {barberName}</p> {/* Mostramos el nombre del barbero aquí */}
+            <p><strong>Barbero:</strong> {barberName}</p>
+            <p><strong>Email del barbero:</strong> {barberEmail}</p>
             <p><strong>Fecha:</strong> {reservation.fecha}</p>
             <p><strong>Hora:</strong> {reservation.hora}</p>
             <p><strong>Servicios adicionales:</strong> {reservation.serviciosAdicionales.join(', ') || 'Ninguno'}</p>
@@ -168,17 +199,22 @@ const ReservaTurno: React.FC = () => {
               <button onClick={() => setShowSummary(false)} style={styles.editButton}>
                 Editar
               </button>
-             
+              <button onClick={confirmReservation} style={styles.confirmButton} disabled={isLoading}>
+                {isLoading ? 'Confirmando...' : 'Confirmar Reserva'}
+              </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {notification.show && (
+        <div style={notification.type === 'success' ? styles.successNotification : styles.errorNotification}>
+          {notification.message}
         </div>
       )}
     </div>
   );
 };
-
-
-
 
 const styles = {
   container: {
@@ -240,16 +276,6 @@ const styles = {
     border: 'none',
     borderRadius: '5px',
     color: 'white',
-  },
-  checkboxGroup: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '5px',
-  },
-  checkboxLabel: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '5px',
   },
   button: {
     width: '100%',
@@ -325,6 +351,51 @@ const styles = {
     border: 'none',
     borderRadius: '5px',
     cursor: 'pointer',
+  },
+  servicesToggle: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    padding: '10px',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    border: 'none',
+    borderRadius: '5px',
+    color: 'white',
+    cursor: 'pointer',
+  },
+  servicesList: {
+    marginTop: '10px',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: '5px',
+    padding: '10px',
+  },
+  serviceItem: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '5px 0',
+    cursor: 'pointer',
+  },
+  successNotification: {
+    position: 'fixed' as const,
+    top: '20px',
+    right: '20px',
+    backgroundColor: '#4CAF50',
+    color: 'white',
+    padding: '10px 20px',
+    borderRadius: '5px',
+    zIndex: 1000,
+  },
+  errorNotification: {
+    position: 'fixed' as const,
+    top: '20px',
+    right: '20px',
+    backgroundColor: '#f44336',
+    color: 'white',
+    padding: '10px 20px',
+    borderRadius: '5px',
+    zIndex: 1000,
   },
 };
 

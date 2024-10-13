@@ -1,39 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // useNavigate para navegar y pasar props
+import { useNavigate } from 'react-router-dom';
 import { Star, Scissors } from 'lucide-react';
 import axiosInstance from '../../axiosConfig';
 
 interface Barber {
   id: string;
-  name: string;
-  price: number;
-  rating: number;
+  nombre: string;
+  precio: number;
+  calificacion: number;
   local: string;
+  email?: string;
 }
 
-const placeholderBarbers: Barber[] = [
-  { id: '1', name: 'Efrain', price: 55000, rating: 5, local: 'barbafina' },
-  { id: '2', name: 'Carlos', price: 40000, rating: 4, local: 'barbafina' },
-  { id: '3', name: 'Ramiro', price: 35000, rating: 3, local: 'barbafina' },
-  { id: '4', name: 'Juan', price: 25000, rating: 2, local: 'barbafina' },
-  { id: '5', name: 'Miguel', price: 30000, rating: 4, local: 'barbafina' },
-];
-
 const BarberosDisponibles: React.FC = () => {
-  const [barbers, setBarbers] = useState<Barber[]>(placeholderBarbers);
+  const [barbers, setBarbers] = useState<Barber[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const navigate = useNavigate(); // Hook para navegación
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchBarbers = async () => {
       try {
-        const response = await axiosInstance.get('/barbers');
-        setBarbers(response.data);
+        const response = await axiosInstance.get<Barber[]>('/barberos');
+        const filteredBarbers = response.data.filter(barber => barber.local.toLowerCase() === 'barbershop');
+        setBarbers(filteredBarbers);
         setLoading(false);
       } catch (err) {
         console.error('Error fetching barbers:', err);
-        setError('Error al cargar los barberos. Se muestran datos de ejemplo.');
+        setError('Error al cargar los barberos. Por favor, intente nuevamente.');
         setLoading(false);
       }
     };
@@ -41,46 +35,53 @@ const BarberosDisponibles: React.FC = () => {
     fetchBarbers();
   }, []);
 
-  // Función para manejar clic en un barbero
-  const handleBarberClick = (barber: Barber) => {
-    navigate(`/Reserva-Turno/${barber.id}`, { state: { barberName: barber.name } }); // Pasar nombre al componente de reserva
+  const handleBarberSelect = (barber: Barber) => {
+    localStorage.setItem('selectedBarberName', barber.nombre);
+    localStorage.setItem('selectedBarberEmail', barber.email || '');
+    localStorage.setItem('selectedBarberId', barber.id);
+    navigate(`/Reserva-Turno/${barber.id}`);
   };
+
+  if (loading) {
+    return <div style={styles.loading}>Cargando barberos...</div>;
+  }
 
   return (
     <div style={styles.container}>
       <div style={styles.content}>
         <h1 style={styles.title}>BarberTurn</h1>
-        <h2 style={styles.subtitle}>Barberos Disponibles</h2>
+        <h2 style={styles.subtitle}>Barberos de Barbershop</h2>
         {error && <div style={styles.error}>{error}</div>}
         <div style={styles.barberList}>
           {barbers.map((barber) => (
             <div
               key={barber.id}
-              onClick={() => handleBarberClick(barber)} // Manejar clic
-              style={styles.barberLink}
+              onClick={() => handleBarberSelect(barber)}
+              style={styles.barberItem}
             >
-              <div style={styles.barberItem}>
-                <div style={styles.profilePicture}>
-                  <Scissors size={30} color="white" />
-                </div>
-                <div style={styles.barberInfo}>
-                  <h3 style={styles.barberName}>{barber.name}</h3>
-                  <p style={styles.barberPrice}>{barber.price.toLocaleString()} COP</p>
-                  <div style={styles.stars}>
-                    {[...Array(5)].map((_, index) => (
-                      <Star
-                        key={index}
-                        size={16}
-                        fill={index < barber.rating ? 'gold' : 'none'}
-                        stroke={index < barber.rating ? 'gold' : 'gray'}
-                      />
-                    ))}
-                  </div>
+              <div style={styles.profilePicture}>
+                <Scissors size={30} color="white" />
+              </div>
+              <div style={styles.barberInfo}>
+                <h3 style={styles.barberName}>{barber.nombre}</h3>
+                
+                <div style={styles.stars}>
+                  {[...Array(5)].map((_, index) => (
+                    <Star
+                      key={index}
+                      size={16}
+                      fill={index < barber.calificacion ? 'gold' : 'none'}
+                      stroke={index < barber.calificacion ? 'gold' : 'gray'}
+                    />
+                  ))}
                 </div>
               </div>
             </div>
           ))}
         </div>
+        {barbers.length === 0 && !error && (
+          <div style={styles.noResults}>No se encontraron barberos en Barbershop.</div>
+        )}
         <div style={styles.footer}>
           © 2024 BarberTurn. Todos los derechos reservados.
         </div>
@@ -125,11 +126,6 @@ const styles = {
     flexDirection: 'column' as const,
     gap: '15px',
   },
-  barberLink: {
-    textDecoration: 'none',
-    color: 'inherit',
-    cursor: 'pointer',
-  },
   barberItem: {
     display: 'flex',
     alignItems: 'center',
@@ -137,6 +133,7 @@ const styles = {
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: '8px',
     transition: 'all 0.3s ease',
+    cursor: 'pointer',
   },
   profilePicture: {
     width: '60px',
@@ -179,6 +176,17 @@ const styles = {
     marginBottom: '15px',
     backgroundColor: 'rgba(255, 0, 0, 0.1)',
     borderRadius: '5px',
+  },
+  noResults: {
+    color: 'white',
+    textAlign: 'center' as const,
+    marginTop: '20px',
+  },
+  loading: {
+    color: 'white',
+    fontSize: '1.2em',
+    textAlign: 'center' as const,
+    padding: '20px',
   },
 };
 
