@@ -14,6 +14,8 @@ import Barberosbarbershop from './components/pages/BarberosDisponibles-Barbersho
 import ReservaTurno from './components/pages/ReservaTurno.tsx';
 import RegistroCredenciales from './components/pages/Registro-Credenciales.tsx';
 import DashboardBarbero from './components/pages/dashboard-barbero.tsx';
+import GaleriaSeleccionable from './components/pages/GaleriaSeleccionable.tsx';
+import Cuadrada from './components/pages/cuadrada.tsx';
 
 import './App.css';
 
@@ -36,6 +38,8 @@ function App() {
           <Route path="/Reserva-Turno/:barberId" element={<ReservaTurno />} />
           <Route path="/Registro-Credenciales" element={<RegistroCredenciales />} />
           <Route path="/Dashboard-Barbero" element={<DashboardBarbero />} />
+          <Route path="/Galeria-Seleccionable" element={<GaleriaSeleccionable />} />
+          <Route path="/Cortes/Cuadrada" element={<Cuadrada />} />
         </Routes>
       </div>
     </Router>

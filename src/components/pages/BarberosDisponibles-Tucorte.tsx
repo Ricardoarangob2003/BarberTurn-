@@ -39,7 +39,7 @@ const BarberosDisponibles: React.FC = () => {
     localStorage.setItem('selectedBarberName', barber.nombre);
     localStorage.setItem('selectedBarberEmail', barber.email || '');
     localStorage.setItem('selectedBarberId', barber.id);
-    navigate(`/Reserva-Turno/${barber.id}`);
+    navigate(`/Galeria-Seleccionable`);
   };
 
   if (loading) {
