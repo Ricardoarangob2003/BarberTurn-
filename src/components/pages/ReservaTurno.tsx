@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, Calendar, X, ChevronDown, ChevronUp, Check } from 'lucide-react';
-import axiosInstance from '../../axiosConfig';
+import axiosInstance, { api } from '../../axiosConfig';
 
 interface User {
   id: string;
@@ -11,10 +11,16 @@ interface User {
 }
 
 interface Reservation {
+  barbero: string;
+  local: string;
   fecha: string;
+  estado: string;
+  corte: string;
+  adicional: string;
+  emailBarbero: string;
+  emailCliente: string;
+  cliente: string;
   hora: string;
-  barberoId: string;
-  serviciosAdicionales: string[];
 }
 
 interface Notification {
@@ -26,40 +32,45 @@ interface Notification {
 const ReservaTurno: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [reservation, setReservation] = useState<Reservation>({
+    barbero: '',
+    local: '',
     fecha: '',
+    estado: 'Pendiente',
+    corte: '',
+    adicional: '',
+    emailBarbero: '',
+    emailCliente: '',
+    cliente: '',
     hora: '',
-    barberoId: '',
-    serviciosAdicionales: [],
   });
   const [showSummary, setShowSummary] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [barberName, setBarberName] = useState('');
-  const [barberEmail, setBarberEmail] = useState('');
   const [showServices, setShowServices] = useState(false);
   const [notification, setNotification] = useState<Notification>({ show: false, message: '', type: 'success' });
   const navigate = useNavigate();
 
-  const serviciosAdicionales = [ 'Tinte', 'Mascarilla',  'Depilación de cejas'];
+  const serviciosAdicionales = ['Tinte', 'Mascarilla', 'Depilación de cejas'];
 
   useEffect(() => {
-    const storedBarberName = localStorage.getItem('selectedBarberName');
-    const storedBarberEmail = localStorage.getItem('selectedBarberEmail');
-    
-    
-    if (storedBarberName && storedBarberEmail ) {
-      setBarberName(storedBarberName);
-      setBarberEmail(storedBarberEmail);
-      setReservation(prev => ({
-        ...prev,
-        
-      }));
-    } else {
-      navigate('/barberos-disponibles/barbafina');
-    }
-
+    const storedBarberName = localStorage.getItem('selectedBarberName') || '';
+    const storedBarberEmail = localStorage.getItem('selectedBarberEmail') || '';
+    const storedBarberId = localStorage.getItem('selectedBarberId') || '';
+    const storedCorte = localStorage.getItem('corte') || '';
     const userData = localStorage.getItem('user');
+    const storedLocal = localStorage.getItem('selectedLocal') || 'name';
+
     if (userData) {
-      setUser(JSON.parse(userData));
+      const parsedUser = JSON.parse(userData);
+      setUser(parsedUser);
+      setReservation((prev) => ({
+        ...prev,
+        barbero: storedBarberName,
+        emailBarbero: storedBarberEmail,
+        corte: storedCorte,
+        cliente: `${parsedUser.nombre} ${parsedUser.apellido}`,
+        emailCliente: parsedUser.email,
+        local: storedLocal
+      }));
     } else {
       navigate('/iniciar-sesion');
     }
@@ -67,16 +78,18 @@ const ReservaTurno: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setReservation(prev => ({ ...prev, [name]: value }));
+    setReservation((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleServiceToggle = (service: string) => {
-    setReservation(prev => ({
-      ...prev,
-      serviciosAdicionales: prev.serviciosAdicionales.includes(service)
-        ? prev.serviciosAdicionales.filter(s => s !== service)
-        : [...prev.serviciosAdicionales, service],
-    }));
+    setReservation((prev) => {
+      const updatedAdicional = prev.adicional ? prev.adicional.split(',') : [];
+      if (updatedAdicional.includes(service)) {
+        return { ...prev, adicional: updatedAdicional.filter((s) => s !== service).join(',') };
+      } else {
+        return { ...prev, adicional: [...updatedAdicional, service].join(',') };
+      }
+    });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -86,11 +99,21 @@ const ReservaTurno: React.FC = () => {
 
   const confirmReservation = async () => {
     setIsLoading(true);
+    console.log('Datos enviados:', reservation); // Verificar qué datos se envían
+
+  
+
     try {
-      await axiosInstance.post('/reservations', reservation);
-      setNotification({ show: true, message: '¡Reserva confirmada con éxito!', type: 'success' });
-      setTimeout(() => navigate('/mis-turnos'), 2000);
+      console.log('Datos enviados:', reservation);
+  
+      const response = await axiosInstance.post('http://localhost:8090/api/turno/post', reservation);
+      if (response.status === 200 || response.status === 201) {
+        setNotification({ show: true, message: '¡Reserva confirmada con éxito!', type: 'success' });
+      } else {
+        throw new Error('Error en la respuesta del servidor');
+      }
     } catch (error) {
+      console.error('Error al confirmar la reserva:', error);
       setNotification({ show: true, message: 'Error al confirmar la reserva. Intente nuevamente.', type: 'error' });
     } finally {
       setIsLoading(false);
@@ -144,7 +167,17 @@ const ReservaTurno: React.FC = () => {
             <input
               type="text"
               id="barbero"
-              value={barberName}
+              value={reservation.barbero}
+              readOnly
+              style={styles.input}
+            />
+          </div>
+          <div style={styles.formGroup}>
+            <label htmlFor="corte">Corte seleccionado:</label>
+            <input
+              type="text"
+              id="corte"
+              value={reservation.corte}
               readOnly
               style={styles.input}
             />
@@ -159,14 +192,14 @@ const ReservaTurno: React.FC = () => {
             </button>
             {showServices && (
               <div style={styles.servicesList}>
-                {serviciosAdicionales.map(service => (
+                {serviciosAdicionales.map((service) => (
                   <div 
                     key={service} 
                     onClick={() => handleServiceToggle(service)}
                     style={styles.serviceItem}
                   >
                     <span>{service}</span>
-                    {reservation.serviciosAdicionales.includes(service) && <Check size={20} color="green" />}
+                    {reservation.adicional.includes(service) && <Check size={20} color="green" />}
                   </div>
                 ))}
               </div>
@@ -188,13 +221,15 @@ const ReservaTurno: React.FC = () => {
               <X size={24} />
             </button>
             <h3 style={styles.modalTitle}>Resumen de la Reserva</h3>
-            <p><strong>Cliente:</strong> {user?.nombre} {user?.apellido}</p>
-            <p><strong>Email del cliente:</strong> {user?.email}</p>
-            <p><strong>Barbero:</strong> {barberName}</p>
-            <p><strong>Email del barbero:</strong> {barberEmail}</p>
+            <p><strong>Cliente:</strong> {reservation.cliente}</p>
+            <p><strong>Email del cliente:</strong> {reservation.emailCliente}</p>
+            <p><strong>Barbero:</strong> {reservation.barbero}</p>
+            <p><strong>Email del barbero:</strong> {reservation.emailBarbero}</p>
+            <p><strong>Local:</strong> {reservation.local}</p>
             <p><strong>Fecha:</strong> {reservation.fecha}</p>
             <p><strong>Hora:</strong> {reservation.hora}</p>
-            <p><strong>Servicios adicionales:</strong> {reservation.serviciosAdicionales.join(', ') || 'Ninguno'}</p>
+            <p><strong>Corte seleccionado:</strong> {reservation.corte}</p>
+            <p><strong>Servicios adicionales:</strong> {reservation.adicional || 'Ninguno'}</p>
             <div style={styles.modalButtons}>
               <button onClick={() => setShowSummary(false)} style={styles.editButton}>
                 Editar
@@ -215,6 +250,7 @@ const ReservaTurno: React.FC = () => {
     </div>
   );
 };
+
 
 const styles = {
   container: {

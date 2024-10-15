@@ -35,7 +35,7 @@ function App() {
           <Route path="/Barberos-Disponibles/barbafina" element={<Barberosbarbafina />} />
           <Route path="/Barberos-Disponibles/tucorte" element={<Barberostucorte />} />
           <Route path="/Barberos-Disponibles/barbershop" element={<Barberosbarbershop />} />
-          <Route path="/Reserva-Turno/:barberId" element={<ReservaTurno />} />
+          <Route path="/Reserva-Turno/" element={<ReservaTurno />} />
           <Route path="/Registro-Credenciales" element={<RegistroCredenciales />} />
           <Route path="/Dashboard-Barbero" element={<DashboardBarbero />} />
           <Route path="/Galeria-Seleccionable" element={<GaleriaSeleccionable />} />

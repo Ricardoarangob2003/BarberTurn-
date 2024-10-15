@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Star } from 'lucide-react';
 
 interface Barbershop {
@@ -17,6 +17,14 @@ const barbershops: Barbershop[] = [
 ];
 
 const BarberiasDisponibles: React.FC = () => {
+  const navigate = useNavigate();
+
+  const handleBarbershopSelect = (id: string, name: string) => {
+    // Guardar el local seleccionado en localStorage
+    localStorage.setItem('selectedLocal', name);
+    navigate(`/barberos-disponibles/${id}`);
+  };
+
   return (
     <div style={styles.container}>
       <div style={styles.content}>
@@ -24,10 +32,10 @@ const BarberiasDisponibles: React.FC = () => {
         <h2 style={styles.subtitle}>Barberías Disponibles</h2>
         <div style={styles.barberList}>
           {barbershops.map((shop) => (
-            <Link
+            <div
               key={shop.id}
-              to={`/barberos-disponibles/${shop.id}`}
               style={styles.barberLink}
+              onClick={() => handleBarbershopSelect(shop.id, shop.name)}
             >
               <div style={styles.barberItem}>
                 <div style={styles.profilePicture}>
@@ -51,7 +59,7 @@ const BarberiasDisponibles: React.FC = () => {
                   </div>
                 </div>
               </div>
-            </Link>
+            </div>
           ))}
         </div>
         <div style={styles.footer}>
@@ -104,6 +112,7 @@ const styles = {
     color: 'inherit',
     flex: '1 1 200px',
     maxWidth: '250px',
+    cursor: 'pointer',  // Esto habilita el clic
   },
   barberItem: {
     display: 'flex',

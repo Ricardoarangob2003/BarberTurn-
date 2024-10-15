@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import ReservaTurno from './ReservaTurno';
 
 interface CortePelo {
   id: number;
@@ -37,8 +36,8 @@ const GaleriaCortesPelo: React.FC = () => {
   const navigate = useNavigate();
 
   const seleccionarCorte = (nombre: string) => {
-    localStorage.setItem('corte', nombre);
-    navigate('/reserva-turno'); // Reemplaza 'barbero123' con el ID real del barbero
+    localStorage.setItem('corteSeleccionado', nombre);
+    navigate('/reserva-turno/'); // Reemplaza 'barbero123' con el ID real del barbero
   };
 
   const voltearTarjeta = (id: number) => {
