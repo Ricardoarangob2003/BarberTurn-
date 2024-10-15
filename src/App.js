@@ -16,6 +16,7 @@ import RegistroCredenciales from './components/pages/Registro-Credenciales.tsx';
 import DashboardBarbero from './components/pages/dashboard-barbero.tsx';
 import GaleriaSeleccionable from './components/pages/GaleriaSeleccionable.tsx';
 import Cuadrada from './components/pages/cuadrada.tsx';
+import MisTurnos from './components/pages/MisTurnos.tsx';
 
 import './App.css';
 
@@ -40,6 +41,7 @@ function App() {
           <Route path="/Dashboard-Barbero" element={<DashboardBarbero />} />
           <Route path="/Galeria-Seleccionable" element={<GaleriaSeleccionable />} />
           <Route path="/Cortes/Cuadrada" element={<Cuadrada />} />
+          <Route path="/Mis-Turnos" element={<MisTurnos />} />
         </Routes>
       </div>
     </Router>

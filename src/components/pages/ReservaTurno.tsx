@@ -208,7 +208,7 @@ const ReservaTurno: React.FC = () => {
           <button type="submit" style={styles.button}>Reservar Turno</button>
         </form>
 
-        <button onClick={() => navigate('/mis-turnos')} style={styles.viewAppointmentsButton}>
+        <button onClick={() => navigate('/Mis-Turnos')} style={styles.viewAppointmentsButton}>
           <Calendar size={20} />
           Ver Mis Turnos
         </button>
