@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface Hairstyle {
   id: number;
@@ -21,11 +22,16 @@ const hairstyles: Hairstyle[] = [
 
 const HairstyleGallery: React.FC = () => {
   const [selectedStyle, setSelectedStyle] = useState<Hairstyle | null>(null);
+  const navigate = useNavigate();
+
+  const handleBack = () => {
+    navigate(-1);
+  };
 
   return (
     <div className="hairstyle-gallery">
       <header className="header">
-        <button className="back-button">
+        <button className="back-button" onClick={handleBack}>
           <ArrowLeft />
           <span>Volver</span>
         </button>
@@ -64,7 +70,7 @@ const HairstyleGallery: React.FC = () => {
         </div>
       )}
 
-      <style >{`
+      <style>{`
         .hairstyle-gallery {
           font-family: 'Arial', sans-serif;
           background-image: url('/assets/imgs/background-gallery.jpg');
@@ -116,8 +122,9 @@ const HairstyleGallery: React.FC = () => {
         }
 
         .gallery-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
           gap: 2rem;
         }
 
@@ -128,6 +135,7 @@ const HairstyleGallery: React.FC = () => {
           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
           transition: transform 0.3s ease;
           cursor: pointer;
+          width: 250px;
         }
 
         .hairstyle-card:hover {
@@ -242,7 +250,11 @@ const HairstyleGallery: React.FC = () => {
 
         @media (max-width: 768px) {
           .gallery-grid {
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            justify-content: center;
+          }
+          
+          .hairstyle-card {
+            width: calc(50% - 1rem);
           }
         }
       `}</style>

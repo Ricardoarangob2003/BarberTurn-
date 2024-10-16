@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface MembershipTier {
   title: string;
@@ -27,19 +28,23 @@ const membershipTiers: MembershipTier[] = [
 ];
 
 const PremiumMembership: React.FC = () => {
+  const navigate = useNavigate();
+
+  const handleBack = () => {
+    navigate(-1);
+  };
+
   return (
     <div style={styles.container}>
-      {/* Fondo oscuro */}
       <div style={styles.overlay}></div>
 
-      {/* Contenido */}
       <div style={styles.contentContainer}>
-        {/* Cabecera */}
         <header style={styles.header}>
           <motion.button
             style={styles.backButton}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            onClick={handleBack}
           >
             <ArrowLeft style={styles.icon} />
             Volver
@@ -49,13 +54,11 @@ const PremiumMembership: React.FC = () => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            onClick={() => window.history.back()}
           >
             BARBERTURN
           </motion.h1>
         </header>
 
-        {/* Título central */}
         <motion.h2
           style={styles.mainTitle}
           initial={{ opacity: 0, y: -30 }}
@@ -65,8 +68,7 @@ const PremiumMembership: React.FC = () => {
           Elige tu Tipo de Membresía
         </motion.h2>
 
-        {/* Sección de membresías */}
-        <div style={styles.membershipsGrid}>
+        <div style={styles.membershipsContainer}>
           {membershipTiers.map((tier, index) => (
             <motion.div
               key={tier.title}
@@ -93,7 +95,6 @@ const PremiumMembership: React.FC = () => {
   );
 };
 
-// Estilos en objeto
 const styles = {
   container: {
     minHeight: '100vh',
@@ -147,16 +148,12 @@ const styles = {
     color: '#fff',
     marginBottom: '3rem',
   },
-  membershipsGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(1, 1fr)',
+  membershipsContainer: {
+    display: 'flex',
+    flexDirection: 'row' as 'row',
+    flexWrap: 'wrap' as 'wrap',
+    justifyContent: 'center',
     gap: '2rem',
-    '@media(min-width: 768px)': {
-      gridTemplateColumns: 'repeat(2, 1fr)',
-    },
-    '@media(min-width: 1024px)': {
-      gridTemplateColumns: 'repeat(4, 1fr)',
-    },
   },
   membershipCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
@@ -164,6 +161,9 @@ const styles = {
     borderRadius: '1rem',
     textAlign: 'center' as 'center',
     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+    width: 'calc(25% - 1.5rem)',
+    minWidth: '250px',
+    maxWidth: '300px',
   },
   membershipTitle: {
     fontSize: '1.5rem',
