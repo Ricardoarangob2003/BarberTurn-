@@ -15,6 +15,9 @@ import RegistroCredenciales from './components/pages/Registro-Credenciales.tsx';
 import DashboardBarbero from './components/pages/dashboard-barbero.tsx';
 import GaleriaSeleccionable from './components/pages/GaleriaSeleccionable.tsx';
 import Cuadrada from './components/pages/cuadrada.tsx';
+import Ovalada from './components/pages/ovalada.tsx';
+import Circular from './components/pages/circular.tsx';
+import Triangular from './components/pages/triangular.tsx';
 import MisTurnos from './components/pages/MisTurnos.tsx';
 import Turnero from './components/pages/turnero.tsx';
 
@@ -40,6 +43,9 @@ function App() {
           <Route path="/Dashboard-Barbero" element={<DashboardBarbero />} />
           <Route path="/Galeria-Seleccionable" element={<GaleriaSeleccionable />} />
           <Route path="/Cortes/Cuadrada" element={<Cuadrada />} />
+          <Route path="/Cortes/Ovalada" element={<Ovalada />} />
+          <Route path="/Cortes/Circular" element={<Circular />} />
+          <Route path="/Cortes/Triangular" element={<Triangular />} />
           <Route path="/Mis-Turnos" element={<MisTurnos />} />
           <Route path="/Turnos" element={<Turnero />} />
         </Routes>
