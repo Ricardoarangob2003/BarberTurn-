@@ -7,7 +7,7 @@ const Index: React.FC = () => {
     <div style={styles.container}>
       <div style={styles.content}>
         <h1 style={styles.title}>BarberTurn</h1>
-        <img src="/assets/imgs/logoBarberTurn.png" alt="BarberTurn Logo" style={styles.logo} />
+        <img src="/assets/imgs/1.png" alt="BarberTurn Logo" style={styles.logo} />
         <p style={styles.tagline}>
           RESERVA TU CORTE DE CABELLO EN LA COMODIDAD DE TU HOGAR...
         </p>
@@ -29,13 +29,13 @@ const Index: React.FC = () => {
       </div>
       
       <footer style={styles.footer}>
-        <a href="#" style={styles.socialIcon} aria-label="Instagram">
+        <a href="https://instagram.com" style={styles.socialIcon} aria-label="Instagram">
           <Instagram />
         </a>
-        <a href="#" style={styles.socialIcon} aria-label="YouTube">
+        <a href="https://youtube.com" style={styles.socialIcon} aria-label="YouTube">
           <Youtube />
         </a>
-        <a href="#" style={styles.socialIcon} aria-label="Llamar">
+        <a href="https://whatsapp.com" style={styles.socialIcon} aria-label="Llamar">
           <Phone />
         </a>
       </footer>

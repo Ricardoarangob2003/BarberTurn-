@@ -1,10 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Premium from './components/pages/Premium';
+import Premium from './components/pages/Premium.tsx';
 import Login from './components/pages/Login.tsx';
-import Galeria from './components/pages/Galeria';
+import Galeria from './components/pages/Galeria.tsx';
 import RecuperarContraseña from'./components/pages/RecuperarContraseña.jsx'
-import Membresias from './components/pages/Membresias';
 import Index from './components/pages/index.tsx';
 import Registro from './components/pages/Registro.tsx';
 import BarberiasDisponibles from './components/pages/BarberiasDisponibles.tsx';
@@ -17,6 +16,7 @@ import DashboardBarbero from './components/pages/dashboard-barbero.tsx';
 import GaleriaSeleccionable from './components/pages/GaleriaSeleccionable.tsx';
 import Cuadrada from './components/pages/cuadrada.tsx';
 import MisTurnos from './components/pages/MisTurnos.tsx';
+import Turnero from './components/pages/turnero.tsx';
 
 import './App.css';
 
@@ -30,7 +30,6 @@ function App() {
           <Route path="/iniciar-sesion" element={<Login />} />
           <Route path="/galeria" element={<Galeria />} />
           <Route path="RecuperarContraseña" element={<RecuperarContraseña />} />
-          <Route path="/membresias" element={<Membresias />} />
           <Route path="/Registro" element={<Registro />} />
           <Route path="/Barberias-Disponibles" element={<BarberiasDisponibles />} />
           <Route path="/Barberos-Disponibles/barbafina" element={<Barberosbarbafina />} />
@@ -42,6 +41,7 @@ function App() {
           <Route path="/Galeria-Seleccionable" element={<GaleriaSeleccionable />} />
           <Route path="/Cortes/Cuadrada" element={<Cuadrada />} />
           <Route path="/Mis-Turnos" element={<MisTurnos />} />
+          <Route path="/Turnos" element={<Turnero />} />
         </Routes>
       </div>
     </Router>
