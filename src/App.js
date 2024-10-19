@@ -10,6 +10,7 @@ import BarberiasDisponibles from './components/pages/BarberiasDisponibles.tsx';
 import Barberosbarbafina from './components/pages/BarberosDisponibles-Barbafina.tsx';
 import Barberostucorte from './components/pages/BarberosDisponibles-Tucorte.tsx';
 import Barberosbarbershop from './components/pages/BarberosDisponibles-Barbershop.tsx';
+import BarberosUrbanBarber from './components/pages/BarberosDisponibles-UrbanBarber.tsx';
 import ReservaTurno from './components/pages/ReservaTurno.tsx';
 import RegistroCredenciales from './components/pages/Registro-Credenciales.tsx';
 import DashboardBarbero from './components/pages/dashboard-barbero.tsx';
@@ -38,6 +39,7 @@ function App() {
           <Route path="/Barberos-Disponibles/barbafina" element={<Barberosbarbafina />} />
           <Route path="/Barberos-Disponibles/tucorte" element={<Barberostucorte />} />
           <Route path="/Barberos-Disponibles/barbershop" element={<Barberosbarbershop />} />
+          <Route path="/Barberos-Disponibles/urbanbarber" element={<BarberosUrbanBarber />} />
           <Route path="/Reserva-Turno/" element={<ReservaTurno />} />
           <Route path="/Registro-Credenciales" element={<RegistroCredenciales />} />
           <Route path="/Dashboard-Barbero" element={<DashboardBarbero />} />

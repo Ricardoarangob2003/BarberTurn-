@@ -114,15 +114,21 @@ const styles = {
   contentContainer: {
     position: 'relative' as 'relative',
     zIndex: 10,
-    padding: '4rem',
-    maxWidth: '1200px',
+    padding: '0 0 4rem 0',
     margin: '0 auto',
   },
   header: {
+    position: 'sticky' as 'sticky',
+    top: 0,
+    left: 0,
+    width: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    color: 'white',
+    padding: '0.5rem 2rem',  // Aumentado el padding izquierdo
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: '2rem',
+    zIndex: 20,
   },
   backButton: {
     display: 'flex',
@@ -137,9 +143,11 @@ const styles = {
     marginRight: '0.5rem',
   },
   title: {
-    fontSize: '2.5rem',
+    fontSize: '1.8rem',
     fontWeight: 'bold' as 'bold',
     color: '#fff',
+    marginRight: '3.8rem',  // Esto empujará el título hacia la izquierda
+    paddingLeft: '1rem',  // Añade un poco de espacio entre el botón "Volver" y el título
   },
   mainTitle: {
     fontSize: '3rem',
@@ -147,6 +155,7 @@ const styles = {
     textAlign: 'center' as 'center',
     color: '#fff',
     marginBottom: '3rem',
+    marginTop: '1rem',
   },
   membershipsContainer: {
     display: 'flex',

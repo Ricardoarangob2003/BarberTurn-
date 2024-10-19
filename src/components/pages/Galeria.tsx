@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -21,7 +21,6 @@ const hairstyles: Hairstyle[] = [
 ];
 
 const HairstyleGallery: React.FC = () => {
-  const [selectedStyle, setSelectedStyle] = useState<Hairstyle | null>(null);
   const navigate = useNavigate();
 
   const handleBack = () => {
@@ -43,12 +42,10 @@ const HairstyleGallery: React.FC = () => {
 
         <div className="gallery-grid">
           {hairstyles.map((style) => (
-            <div key={style.id} className="hairstyle-card" onClick={() => setSelectedStyle(style)}>
+            <div key={style.id} className="hairstyle-card">
               <div className="image-container">
                 <img src={style.image} alt={style.title} />
-                <div className="overlay">
-                  
-                </div>
+                <div className="overlay"></div>
               </div>
               <div className="card-content">
                 <h3>{style.title}</h3>
@@ -58,17 +55,6 @@ const HairstyleGallery: React.FC = () => {
           ))}
         </div>
       </main>
-
-      {selectedStyle && (
-        <div className="modal">
-          <div className="modal-content">
-            <h2>{selectedStyle.title}</h2>
-            <img src={selectedStyle.image} alt={selectedStyle.title} />
-            <p>{selectedStyle.description}</p>
-            <button onClick={() => setSelectedStyle(null)}>Cerrar</button>
-          </div>
-        </div>
-      )}
 
       <style>{`
         .hairstyle-gallery {
@@ -81,7 +67,7 @@ const HairstyleGallery: React.FC = () => {
         }
 
         .header {
-          background-color: rgba(51, 51, 51, 0.8);
+          background-color: rgba(0, 0, 0, 0.8);
           color: white;
           padding: 1rem;
           display: flex;
@@ -134,7 +120,7 @@ const HairstyleGallery: React.FC = () => {
           overflow: hidden;
           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
           transition: transform 0.3s ease;
-          cursor: pointer;
+          cursor: default;
           width: 250px;
         }
 
@@ -173,25 +159,6 @@ const HairstyleGallery: React.FC = () => {
           transition: opacity 0.3s ease;
         }
 
-        .hairstyle-card:hover .overlay {
-          opacity: 1;
-        }
-
-        .select-button {
-          background-color: white;
-          color: #333;
-          border: none;
-          padding: 0.5rem 1rem;
-          border-radius: 5px;
-          font-weight: bold;
-          cursor: pointer;
-          transition: background-color 0.3s ease;
-        }
-
-        .select-button:hover {
-          background-color: #f0f0f0;
-        }
-
         .card-content {
           padding: 1rem;
         }
@@ -205,47 +172,6 @@ const HairstyleGallery: React.FC = () => {
           margin: 0;
           font-size: 0.9rem;
           color: #666;
-        }
-
-        .modal {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background-color: rgba(0, 0, 0, 0.5);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .modal-content {
-          background-color: white;
-          padding: 2rem;
-          border-radius: 10px;
-          max-width: 500px;
-          width: 90%;
-          text-align: center;
-        }
-
-        .modal-content img {
-          max-width: 100%;
-          border-radius: 5px;
-          margin-bottom: 1rem;
-        }
-
-        .modal-content button {
-          background-color: #333;
-          color: white;
-          border: none;
-          padding: 0.5rem 1rem;
-          border-radius: 5px;
-          cursor: pointer;
-          transition: background-color 0.3s ease;
-        }
-
-        .modal-content button:hover {
-          background-color: #555;
         }
 
         @media (max-width: 768px) {

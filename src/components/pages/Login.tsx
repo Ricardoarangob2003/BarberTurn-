@@ -190,7 +190,7 @@ const styles = {
   input: {
     width: '100%',
     padding: '10px',
-    paddingRight: '40px',
+    paddingRight: '20px',
     borderRadius: '5px',
     border: 'none',
     background: 'rgba(255,255,255,0.1)',
@@ -198,7 +198,7 @@ const styles = {
   },
   eyeButton: {
     position: 'absolute' as const,
-    right: '10px',
+    right: '2px',
     top: '50%',
     transform: 'translateY(-50%)',
     background: 'none',

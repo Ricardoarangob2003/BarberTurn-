@@ -47,7 +47,7 @@ const GaleriaCortesPelo: React.FC = () => {
   return (
     <div style={estilos.contenedor}>
       <header style={estilos.encabezado}>
-        <Link to="/" style={estilos.botonVolver}>Volver</Link>
+        <Link to="/Galeria-Seleccionable" style={estilos.botonVolver}>Volver</Link>
         <h1 style={estilos.titulo}>BARBERTURN</h1>
       </header>
 
