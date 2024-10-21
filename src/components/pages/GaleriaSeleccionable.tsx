@@ -86,6 +86,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: '1.5rem',
   },
   title: {
+    color: 'white',
     textAlign: 'center',
     margin: '2rem 0',
   },
@@ -142,11 +143,11 @@ const styles: { [key: string]: React.CSSProperties } = {
   cardTitle: {
     margin: '0',
     fontSize: '24px',
-    color: 'black',
+    color: 'white',
   },
   cardDescription: {
     margin: '10px 0',
-    color: 'black',
+    color: 'white',
   },
   selectButton: {
     backgroundColor: 'black',

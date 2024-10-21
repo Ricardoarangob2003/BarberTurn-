@@ -27,6 +27,7 @@ const MisTurnos: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showHistory, setShowHistory] = useState(false);
+  const [showCanceledHistory, setShowCanceledHistory] = useState(false); // Added state for canceled appointments
   const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
 
@@ -65,6 +66,7 @@ const MisTurnos: React.FC = () => {
 
   const turnosPendientes = turnos.filter(turno => turno.estado && turno.estado.toLowerCase() !== 'completado');
   const turnosCompletados = turnos.filter(turno => turno.estado && turno.estado.toLowerCase() === 'completado');
+  const turnosCancelados = turnos.filter(turno => turno.estado && turno.estado.toLowerCase() === 'cancelado');
 
   if (loading) {
     return <div style={styles.loading}>Cargando tus turnos...</div>;
@@ -129,6 +131,31 @@ const MisTurnos: React.FC = () => {
                 </>
               )}
             </div>
+            <div style={styles.sectionContainer}> {/* Added section for canceled appointments */}
+              <button 
+                onClick={() => setShowCanceledHistory(!showCanceledHistory)} 
+                style={styles.historyButton}
+              >
+                {showCanceledHistory ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                {showCanceledHistory ? 'Ocultar Historial de Turnos Cancelados' : 'Ver Historial de Turnos Cancelados'}
+              </button>
+              {showCanceledHistory && (
+                <>
+                  <h3 style={styles.sectionTitle}>
+                    <X size={20} />
+                    Historial de Turnos Cancelados
+                  </h3>
+                  <div style={styles.turnosList}>
+                    {turnosCancelados.map((turno) => (
+                      <TurnoItem key={turno.id} turno={turno} />
+                    ))}
+                  </div>
+                  {turnosCancelados.length === 0 && (
+                    <p style={styles.noTurnos}>No tienes turnos cancelados.</p>
+                  )}
+                </>
+              )}
+            </div>
           </>
         )}
         <button onClick={() => navigate('/reserva-turno')} style={styles.newAppointmentButton}>
@@ -165,13 +192,13 @@ const getEstadoStyle = (estado: string | null | undefined) => {
   
   switch (estado.toLowerCase()) {
     case 'pendiente':
-      return { color: 'orange' };
+      return { color: '#ffa500', fontWeight: 'bold' };
     case 'confirmado':
-      return { color: 'green' };
+      return { color: '#00ff00', fontWeight: 'bold' };
     case 'cancelado':
-      return { color: 'red' };
+      return { color: '#ff0000', fontWeight: 'bold' };
     case 'completado':
-      return { color: 'blue' };
+      return { color: '#ffff00', fontWeight: 'bold' };
     default:
       return {};
   }

@@ -120,6 +120,7 @@ const estilos: { [key: string]: React.CSSProperties } = {
   subtitulo: {
     textAlign: 'center',
     color: '#fff',
+    fontSize: '1.8rem',
     margin: '2rem 0',
   },
   galeria: {
