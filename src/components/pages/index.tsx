@@ -29,15 +29,15 @@ const Index: React.FC = () => {
       </div>
       
       <footer style={styles.footer}>
-        <a href="https://instagram.com" style={styles.socialIcon} aria-label="Instagram">
-          <Instagram />
+      <a href="https://www.instagram.com/barber_turn/" style={styles.socialIcon} aria-label="Instagram"target='_blank' rel="noreferrer noopener"> <Instagram />
+
         </a>
-        <a href="https://youtube.com" style={styles.socialIcon} aria-label="YouTube">
-          <Youtube />
-        </a>
-        <a href="https://whatsapp.com" style={styles.socialIcon} aria-label="Llamar">
-          <Phone />
-        </a>
+        <a href="https:youtube.com" style={styles.socialIcon} aria-label="youtube"target='_blank' rel="noreferrer noopener"> <Youtube />
+
+</a>
+<a href="https://www.whatsapp.com" style={styles.socialIcon} aria-label="whatsapp"target='_blank' rel="noreferrer noopener"> <Phone />
+
+</a>
       </footer>
     </div>
   );
