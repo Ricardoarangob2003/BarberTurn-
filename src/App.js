@@ -21,6 +21,7 @@ import Circular from './components/pages/circular.tsx';
 import Triangular from './components/pages/triangular.tsx';
 import MisTurnos from './components/pages/MisTurnos.tsx';
 import Turnero from './components/pages/turnero.tsx';
+import TicketTurn from './components/pages/Ticket-turnos.tsx'
 
 import './App.css';
 
@@ -50,6 +51,7 @@ function App() {
           <Route path="/Cortes/Triangular" element={<Triangular />} />
           <Route path="/Mis-Turnos" element={<MisTurnos />} />
           <Route path="/Turnos" element={<Turnero />} />
+          <Route path='/Ticket-Turnos' element={<TicketTurn />} />
         </Routes>
       </div>
     </Router>

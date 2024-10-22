@@ -1,93 +1,290 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useRef } from 'react';
+import { Printer, FileText } from 'lucide-react';
+import { useReactToPrint } from 'react-to-print';
+import { Document, Page, Text, View, StyleSheet, PDFViewer } from '@react-pdf/renderer';
+import axiosInstance from '../../axiosConfig';
 
-const UnderConstruction: React.FC = () => {
+interface Turno {
+  id: string;
+  numero: string;
+  barberia: string;
+  fecha: Date;
+}
+
+const barberias = ['Barbafina', 'Barbershop', 'Tucorte', 'Urbanbarber'];
+
+const styles = StyleSheet.create({
+  page: {
+    flexDirection: 'column',
+    backgroundColor: '#E4E4E4',
+    padding: 10,
+  },
+  section: {
+    margin: 10,
+    padding: 10,
+    flexGrow: 1,
+  },
+  title: {
+    fontSize: 24,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  text: {
+    fontSize: 14,
+    marginBottom: 10,
+  },
+});
+
+const TicketPDF = ({ turno }: { turno: Turno }) => (
+  <Document>
+    <Page size="A6" style={styles.page}>
+      <View style={styles.section}>
+        <Text style={styles.title}>TICKET DE TURNO</Text>
+        <Text style={styles.text}>Número: {turno.numero}</Text>
+        <Text style={styles.text}>Barbería: {turno.barberia}</Text>
+        <Text style={styles.text}>Fecha: {turno.fecha.toLocaleString()}</Text>
+      </View>
+    </Page>
+  </Document>
+);
+
+const TicketImprimible = React.forwardRef<HTMLDivElement, { turno: Turno }>(({ turno }, ref) => (
+  <div ref={ref} style={stylesJS.ticketImprimible}>
+    <h2 style={stylesJS.ticketTitle}>TICKET DE TURNO</h2>
+    <p><strong>Número:</strong> {turno.numero}</p>
+    <p><strong>Barbería:</strong> {turno.barberia}</p>
+    <p><strong>Fecha:</strong> {turno.fecha.toLocaleString()}</p>
+  </div>
+));
+
+const Turnero: React.FC = () => {
+  const [turnoActual, setTurnoActual] = useState<Turno | null>(null);
+  const [barberiaSeleccionada, setBarberiaSeleccionada] = useState<string>('');
+  const [error, setError] = useState<string | null>(null);
+  const [showPDFPreview, setShowPDFPreview] = useState(false);
+  const componenteImprimible = useRef<HTMLDivElement>(null);
+
+  const generarTurno = async () => {
+    if (!barberiaSeleccionada) {
+      setError('Por favor, selecciona una barbería antes de generar un turno.');
+      return;
+    }
+
+    try {
+      const letras = Array.from({ length: 3 }, () => String.fromCharCode(65 + Math.floor(Math.random() * 26))).join('');
+      const numeros = Array.from({ length: 3 }, () => Math.floor(Math.random() * 10)).join('');
+      const nuevoNumeroTurno = `${letras}${numeros}`;
+
+      const nuevoTurno: Turno = {
+        id: Date.now().toString(),
+        numero: nuevoNumeroTurno,
+        barberia: barberiaSeleccionada,
+        fecha: new Date(),
+      };
+
+      // Guardar el turno en la base de datos
+      await guardarTurno(nuevoTurno);
+
+      setTurnoActual(nuevoTurno);
+      setError(null);
+    } catch (err) {
+      console.error('Error al generar el turno:', err);
+      setError('Hubo un error al generar el turno. Por favor, intente nuevamente.');
+    }
+  };
+
+  const guardarTurno = async (turno: Turno) => {
+    try {
+      await axiosInstance.post('/api/turnero', turno);
+      console.log('Turno guardado exitosamente');
+    } catch (error) {
+      console.error('Error al guardar el turno:', error);
+      throw error;
+    }
+  };
+
+  const imprimirTicket = useReactToPrint({
+    content: () => componenteImprimible.current,
+    documentTitle: `Ticket_${turnoActual?.numero || 'Turno'}`,
+    onAfterPrint: () => alert('Ticket impreso exitosamente'),
+  });
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white">
-      <div className="text-center">
-        {/* Fondo con imagen difuminada */}
-        <div
-          className="absolute inset-0 bg-cover bg-center opacity-30"
-          style={{
-            backgroundImage:
-              "url('https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-9PPYo6UL7a3WEto3Q3qOdWnIx0MIc0.png')",
-          }}
-        ></div>
-        {/* Capa de superposición */}
-        <div className="absolute inset-0 bg-black bg-opacity-70"></div>
-
-        {/* Contenido de la página */}
-        <motion.div
-          className="relative z-10"
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
+    <div style={stylesJS.container}>
+      <h2 style={stylesJS.title}>Generador de Turnos</h2>
+      <div style={stylesJS.selectorContainer}>
+        <label htmlFor="barberia-select" style={stylesJS.label}>Selecciona una barbería:</label>
+        <select
+          id="barberia-select"
+          value={barberiaSeleccionada}
+          onChange={(e) => setBarberiaSeleccionada(e.target.value)}
+          style={stylesJS.select}
         >
-          <motion.h1
-            className="text-5xl font-bold mb-4"
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.6 }}
-          >
-            Página en Construcción
-          </motion.h1>
-
-          <motion.p
-            className="text-lg mb-6"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-          >
-            Estamos trabajando arduamente para traerte una mejor experiencia.
-          </motion.p>
-
-          <motion.div
-            className="flex justify-center space-x-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-          >
-            {/* Botón Volver */}
-            <motion.button
-              className="py-2 px-6 bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => window.history.back()}
-            >
-              Volver
-            </motion.button>
-          </motion.div>
-
-          {/* Animación para simular construcción */}
-          <motion.div
-            className="mt-10"
-            initial={{ rotate: 0 }}
-            animate={{ rotate: 360 }}
-            transition={{
-              repeat: Infinity,
-              duration: 10,
-              ease: "linear",
-            }}
-          >
-            <motion.svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              className="w-12 h-12 mx-auto"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 8v4l3 3m6-3a9 9 0 11-9-9 9 9 0 019 9z"
-              />
-            </motion.svg>
-          </motion.div>
-        </motion.div>
+          <option value="">--Selecciona una barbería--</option>
+          {barberias.map((barberia) => (
+            <option key={barberia} value={barberia}>{barberia}</option>
+          ))}
+        </select>
       </div>
+      <button 
+        onClick={generarTurno} 
+        style={stylesJS.button} 
+        aria-label="Generar nuevo turno"
+        disabled={!barberiaSeleccionada}
+      >
+        Generar Turno
+      </button>
+      {error && <p style={stylesJS.error} role="alert">{error}</p>}
+      {turnoActual && (
+        <div style={stylesJS.turnoInfo}>
+          <h3 style={stylesJS.turnoTitle}>Turno Actual: {turnoActual.numero}</h3>
+          <p>Barbería: {turnoActual.barberia}</p>
+          <p>Fecha: {turnoActual.fecha.toLocaleString()}</p>
+          <button 
+            onClick={() => setShowPDFPreview(true)} 
+            style={stylesJS.printButton} 
+            aria-label="Ver PDF"
+          >
+            <FileText size={20} />
+            Ver PDF
+          </button>
+          <button 
+            onClick={imprimirTicket} 
+            style={stylesJS.printButton} 
+            aria-label="Imprimir ticket"
+          >
+            <Printer size={20} />
+            Imprimir Ticket
+          </button>
+        </div>
+      )}
+      
+      {/* Componente oculto para la impresión */}
+      <div style={{ display: 'none' }}>
+        {turnoActual && <TicketImprimible ref={componenteImprimible} turno={turnoActual} />}
+      </div>
+
+      {/* Modal para mostrar el PDF */}
+      {showPDFPreview && turnoActual && (
+        <div style={stylesJS.modal}>
+          <div style={stylesJS.modalContent}>
+            <button style={stylesJS.closeButton} onClick={() => setShowPDFPreview(false)}>
+              Cerrar
+            </button>
+            <PDFViewer width="100%" height="500px">
+              <TicketPDF turno={turnoActual} />
+            </PDFViewer>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-export default UnderConstruction;
+const stylesJS = {
+  container: {
+    padding: '20px',
+    maxWidth: '400px',
+    margin: '0 auto',
+    backgroundColor: '#f0f0f0',
+    borderRadius: '8px',
+  },
+  title: {
+    fontSize: '24px',
+    marginBottom: '20px',
+    textAlign: 'center' as const,
+  },
+  selectorContainer: {
+    marginBottom: '20px',
+  },
+  label: {
+    display: 'block',
+    marginBottom: '5px',
+  },
+  select: {
+    width: '100%',
+    padding: '8px',
+    fontSize: '16px',
+    borderRadius: '4px',
+  },
+  button: {
+    backgroundColor: '#4CAF50',
+    border: 'none',
+    color: 'white',
+    padding: '10px 20px',
+    textAlign: 'center' as const,
+    textDecoration: 'none',
+    display: 'inline-block',
+    fontSize: '16px',
+    margin: '4px 2px',
+    cursor: 'pointer',
+    borderRadius: '4px',
+    width: '100%',
+  },
+  turnoInfo: {
+    marginTop: '20px',
+    padding: '10px',
+    backgroundColor: 'white',
+    borderRadius: '4px',
+  },
+  turnoTitle: {
+    fontSize: '20px',
+    marginBottom: '10px',
+  },
+  error: {
+    color: 'red',
+    marginTop: '10px',
+  },
+  printButton: {
+    backgroundColor: '#008CBA',
+    border: 'none',
+    color: 'white',
+    padding: '10px 20px',
+    textAlign: 'center' as const,
+    textDecoration: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '16px',
+    margin: '10px 0',
+    cursor: 'pointer',
+    borderRadius: '4px',
+    width: '100%',
+  },
+  ticketImprimible: {
+    padding: '20px',
+    border: '1px solid #000',
+    maxWidth: '300px',
+    margin: '0 auto',
+  },
+  ticketTitle: {
+    textAlign: 'center' as const,
+    marginBottom: '20px',
+  },
+  modal: {
+    position: 'fixed' as const,
+    zIndex: 1,
+    left: 0,
+    top: 0,
+    width: '100%',
+    height: '100%',
+    overflow: 'auto',
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  modalContent: {
+    backgroundColor: '#fefefe',
+    margin: '15% auto',
+    padding: '20px',
+    border: '1px solid #888',
+    width: '80%',
+  },
+  closeButton: {
+    color: '#aaa',
+    float: 'right' as const,
+    fontSize: '28px',
+    fontWeight: 'bold' as const,
+    cursor: 'pointer',
+  },
+};
+
+export default Turnero;
