@@ -22,7 +22,8 @@ import Triangular from './components/pages/triangular.tsx';
 import MisTurnos from './components/pages/MisTurnos.tsx';
 import Turnero from './components/pages/turnero.tsx';
 import TicketTurn from './components/pages/Ticket-turnos.tsx'
-
+import AdminBarber from './components/pages/Admin-Barber.tsx'
+import LoginRegister from './components/pages/Login-Register_Barber.tsx'
 import './App.css';
 
 function App() {
@@ -52,6 +53,8 @@ function App() {
           <Route path="/Mis-Turnos" element={<MisTurnos />} />
           <Route path="/Turnos" element={<Turnero />} />
           <Route path='/Ticket-Turnos' element={<TicketTurn />} />
+          <Route path='/Dashboard-Barberia' element={<AdminBarber />} />
+          <Route path='/Iniciar-sesion-Barberia' element={<LoginRegister />} />
         </Routes>
       </div>
     </Router>
