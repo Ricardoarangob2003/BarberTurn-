@@ -7,30 +7,31 @@ const LoginRegister: React.FC = () => {
   const [paso, setPaso] = useState(1);
   const navigate = useNavigate();
 
-  // Estado para login
-  const [correoLogin, setCorreoLogin] = useState('');
-  const [contrasenaLogin, setContrasenaLogin] = useState('');
-
-  // Estado para registro
-  const [correoRegistro, setCorreoRegistro] = useState('');
-  const [nombreRegistro, setNombreRegistro] = useState('');
-  const [apellidoRegistro, setApellidoRegistro] = useState('');
-  const [localRegistro, setLocalRegistro] = useState('');
-  const [contrasenaRegistro, setContrasenaRegistro] = useState('');
-  const [direccionRegistro, setDireccionRegistro] = useState('');
-  const [telefonoRegistro, setTelefonoRegistro] = useState('');
+  const [correo, setCorreo] = useState('');
+  const [contrasena, setContrasena] = useState('');
+  const [nombre, setNombre] = useState('');
+  const [apellido, setApellido] = useState('');
+  const [local, setLocal] = useState('');
+  const [direccion, setDireccion] = useState('');
+  const [telefono, setTelefono] = useState('');
 
   const manejarLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const respuesta = await api.get('/api/adminbarberia', { 
-        params: { correo: correoLogin, contrasena: contrasenaLogin }
-      });
-      localStorage.setItem('adminData', JSON.stringify(respuesta.data));
-      navigate('/Dashboard-Barberia');
+      const respuesta = await api.get('/adminbarberia');
+      const adminEncontrado = respuesta.data.find((admin: any) => 
+        admin.correo === correo && admin.contrasena === contrasena
+      );
+
+      if (adminEncontrado) {
+        localStorage.setItem('adminData', JSON.stringify(adminEncontrado));
+        navigate('/Dashboard-Barberia');
+      } else {
+        alert('Credenciales incorrectas. Por favor, intenta de nuevo.');
+      }
     } catch (error) {
       console.error('Error en el login:', error);
-      alert('Login fallido. Por favor, verifica tus credenciales.');
+      alert('Error en el servidor. Por favor, intenta más tarde.');
     }
   };
 
@@ -42,31 +43,35 @@ const LoginRegister: React.FC = () => {
   const manejarRegistroPaso2 = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const respuestaAdmin = await api.post('/api/adminbarberia', {
-        correo: correoRegistro,
-        nombre: nombreRegistro,
-        apellido: apellidoRegistro,
-        local: localRegistro,
-        contrasena: contrasenaRegistro
+      const respuestaAdmin = await api.post('/adminbarberia/post', {
+        correo,
+        nombre,
+        apellido,
+        local,
+        contrasena,
+        telefono,
+        direccion,
       });
 
-      await api.post('/api/local', {
+      await api.post('/local/post', {
         adminId: respuestaAdmin.data.id,
-        nombre: localRegistro,
-        direccion: direccionRegistro,
-        telefono: telefonoRegistro
+        nombre: local,
+        direccion,
+        telefono,
+        local
       });
 
       localStorage.setItem('adminData', JSON.stringify({
         ...respuestaAdmin.data,
         local: {
-          nombre: localRegistro,
-          direccion: direccionRegistro,
-          telefono: telefonoRegistro
+          nombre: local,
+          direccion,
+          telefono
         }
       }));
 
-      navigate('/Dashboard-Barberia');
+      setEsLogin(true); // Cambiar a la vista de login
+      alert('Registro exitoso. Por favor, inicia sesión.');
     } catch (error) {
       console.error('Error en el registro:', error);
       alert('Registro fallido. Por favor, intenta de nuevo.');
@@ -97,16 +102,16 @@ const LoginRegister: React.FC = () => {
             <input
               type="email"
               placeholder="Correo"
-              value={correoLogin}
-              onChange={(e) => setCorreoLogin(e.target.value)}
+              value={correo}
+              onChange={(e) => setCorreo(e.target.value)}
               style={styles.input}
               required
             />
             <input
               type="password"
               placeholder="Contraseña"
-              value={contrasenaLogin}
-              onChange={(e) => setContrasenaLogin(e.target.value)}
+              value={contrasena}
+              onChange={(e) => setContrasena(e.target.value)}
               style={styles.input}
               required
             />
@@ -118,40 +123,40 @@ const LoginRegister: React.FC = () => {
               <input
                 type="email"
                 placeholder="Correo"
-                value={correoRegistro}
-                onChange={(e) => setCorreoRegistro(e.target.value)}
+                value={correo}
+                onChange={(e) => setCorreo(e.target.value)}
                 style={styles.input}
                 required
               />
               <input
                 type="text"
                 placeholder="Nombre"
-                value={nombreRegistro}
-                onChange={(e) => setNombreRegistro(e.target.value)}
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)}
                 style={styles.input}
                 required
               />
               <input
                 type="text"
                 placeholder="Apellido"
-                value={apellidoRegistro}
-                onChange={(e) => setApellidoRegistro(e.target.value)}
+                value={apellido}
+                onChange={(e) => setApellido(e.target.value)}
                 style={styles.input}
                 required
               />
               <input
                 type="text"
                 placeholder="Nombre del Local"
-                value={localRegistro}
-                onChange={(e) => setLocalRegistro(e.target.value)}
+                value={local}
+                onChange={(e) => setLocal(e.target.value)}
                 style={styles.input}
                 required
               />
               <input
                 type="password"
                 placeholder="Contraseña"
-                value={contrasenaRegistro}
-                onChange={(e) => setContrasenaRegistro(e.target.value)}
+                value={contrasena}
+                onChange={(e) => setContrasena(e.target.value)}
                 style={styles.input}
                 required
               />
@@ -162,16 +167,16 @@ const LoginRegister: React.FC = () => {
               <input
                 type="text"
                 placeholder="Dirección del Local"
-                value={direccionRegistro}
-                onChange={(e) => setDireccionRegistro(e.target.value)}
+                value={direccion}
+                onChange={(e) => setDireccion(e.target.value)}
                 style={styles.input}
                 required
               />
               <input
                 type="tel"
                 placeholder="Teléfono del Local"
-                value={telefonoRegistro}
-                onChange={(e) => setTelefonoRegistro(e.target.value)}
+                value={telefono}
+                onChange={(e) => setTelefono(e.target.value)}
                 style={styles.input}
                 required
               />

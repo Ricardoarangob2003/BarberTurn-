@@ -1,109 +1,124 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axiosInstance from '../../axiosConfig';
+import { api } from '../../axiosConfig';
 
-interface Barber {
+interface Barbero {
   id: string;
-  name: string;
-  speciality: string;
+  nombre: string;
+  especialidad: string;
+  local: string;
 }
 
-interface Appointment {
+interface Cita {
   id: string;
-  clientName: string;
-  date: string;
-  status: 'completed' | 'pending' | 'canceled';
+  nombreCliente: string;
+  fecha: string;
+  local: string;
+  estado: 'completado' | 'pendiente' | 'cancelado';
 }
 
-interface AdminData {
+interface DatosAdmin {
   id: string;
-  name: string;
-  barbershop: string;
+  nombre: string;
+  local: string;
 }
 
-const AdminBarberDashboard: React.FC = () => {
-  const [barbers, setBarbers] = useState<Barber[]>([]);
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [adminData, setAdminData] = useState<AdminData | null>(null);
+const PanelAdminBarberia: React.FC = () => {
+  const [barberos, setBarberos] = useState<Barbero[]>([]);
+  const [citas, setCitas] = useState<Cita[]>([]);
+  const [datosAdmin, setDatosAdmin] = useState<DatosAdmin | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Retrieve admin data from localStorage
-    const storedAdminData = localStorage.getItem('adminData');
-    if (storedAdminData) {
-      setAdminData(JSON.parse(storedAdminData));
+    const datosAdminAlmacenados = localStorage.getItem('adminData');
+    if (datosAdminAlmacenados) {
+      setDatosAdmin(JSON.parse(datosAdminAlmacenados));
     }
+  }, []);
 
-    // Fetch barbers and appointments data
-    const fetchData = async () => {
-      try {
-        const barbersResponse = await axiosInstance.get(`/barbers?barbershop=${adminData?.barbershop}`);
-        setBarbers(barbersResponse.data);
+  useEffect(() => {
+    const obtenerDatos = async () => {
+      if (datosAdmin && datosAdmin.local) {
+        try {
+          const [respuestaBarberos, respuestaCitas] = await Promise.all([
+            api.get('/barberos'),
+            api.get('/turnos')
+          ]);
 
-        const appointmentsResponse = await axiosInstance.get(`/appointments?barbershop=${adminData?.barbershop}`);
-        setAppointments(appointmentsResponse.data);
-      } catch (error) {
-        console.error('Error fetching data:', error);
+          const barberosFiltrados = respuestaBarberos.data.filter((barbero: Barbero) => barbero.local === datosAdmin.local);
+          setBarberos(barberosFiltrados);
+
+          const citasFiltradas = respuestaCitas.data.filter((cita: Cita) => cita.local === datosAdmin.local);
+          setCitas(citasFiltradas);
+
+          setError(null);
+        } catch (error) {
+          console.error('Error al obtener datos:', error);
+          setError('Error al cargar los datos. Por favor, intenta de nuevo más tarde.');
+        }
       }
     };
 
-    if (adminData) {
-      fetchData();
-    }
-  }, [adminData]);
+    obtenerDatos();
+  }, [datosAdmin]);
 
-  const filteredAppointments = (status: 'completed' | 'pending' | 'canceled') => {
-    return appointments.filter(appointment => appointment.status === status);
+  const filtrarCitas = (estado: 'completado' | 'pendiente' | 'cancelado') => {
+    return citas.filter(cita => cita.estado === estado);
   };
 
-  if (!adminData) {
-    return <div>Loading...</div>;
+  if (!datosAdmin) {
+    return <div>Cargando...</div>;
+  }
+
+  if (error) {
+    return <div style={estilos.error}>{error}</div>;
   }
 
   return (
-    <div style={styles.wrapper}>
-      <div style={styles.container}>
-        <h1 style={styles.title}>Admin Dashboard - {adminData.barbershop}</h1>
+    <div style={estilos.contenedor}>
+      <div style={estilos.panel}>
+        <h1 style={estilos.titulo}>Panel de Administración - {datosAdmin.local}</h1>
         
-        <section style={styles.section}>
-          <h2 style={styles.sectionTitle}>Registered Barbers</h2>
-          <ul style={styles.list}>
-            {barbers.map(barber => (
-              <li key={barber.id} style={styles.listItem}>
-                {barber.name} - {barber.speciality}
+        <section style={estilos.seccion}>
+          <h2 style={estilos.tituloSeccion}>Barberos Registrados</h2>
+          <ul style={estilos.lista}>
+            {barberos.map(barbero => (
+              <li key={barbero.id} style={estilos.elementoLista}>
+                {barbero.nombre} - {barbero.especialidad}
               </li>
             ))}
           </ul>
         </section>
 
-        <section style={styles.section}>
-          <h2 style={styles.sectionTitle}>Appointments</h2>
-          <div style={styles.appointmentsContainer}>
-            <div style={styles.appointmentColumn}>
-              <h3 style={styles.columnTitle}>Completed</h3>
-              <ul style={styles.list}>
-                {filteredAppointments('completed').map(appointment => (
-                  <li key={appointment.id} style={styles.listItem}>
-                    {appointment.clientName} - {appointment.date}
+        <section style={estilos.seccion}>
+          <h2 style={estilos.tituloSeccion}>Citas</h2>
+          <div style={estilos.contenedorCitas}>
+            <div style={estilos.columnaCitas}>
+              <h3 style={estilos.tituloColumna}>Completadas</h3>
+              <ul style={estilos.lista}>
+                {filtrarCitas('completado').map(cita => (
+                  <li key={cita.id} style={estilos.elementoLista}>
+                    {cita.nombreCliente} - {cita.fecha}
                   </li>
                 ))}
               </ul>
             </div>
-            <div style={styles.appointmentColumn}>
-              <h3 style={styles.columnTitle}>Pending</h3>
-              <ul style={styles.list}>
-                {filteredAppointments('pending').map(appointment => (
-                  <li key={appointment.id} style={styles.listItem}>
-                    {appointment.clientName} - {appointment.date}
+            <div style={estilos.columnaCitas}>
+              <h3 style={estilos.tituloColumna}>Pendientes</h3>
+              <ul style={estilos.lista}>
+                {filtrarCitas('pendiente').map(cita => (
+                  <li key={cita.id} style={estilos.elementoLista}>
+                    {cita.nombreCliente} - {cita.fecha}
                   </li>
                 ))}
               </ul>
             </div>
-            <div style={styles.appointmentColumn}>
-              <h3 style={styles.columnTitle}>Canceled</h3>
-              <ul style={styles.list}>
-                {filteredAppointments('canceled').map(appointment => (
-                  <li key={appointment.id} style={styles.listItem}>
-                    {appointment.clientName} - {appointment.date}
+            <div style={estilos.columnaCitas}>
+              <h3 style={estilos.tituloColumna}>Canceladas</h3>
+              <ul style={estilos.lista}>
+                {filtrarCitas('cancelado').map(cita => (
+                  <li key={cita.id} style={estilos.elementoLista}>
+                    {cita.nombreCliente} - {cita.fecha}
                   </li>
                 ))}
               </ul>
@@ -111,17 +126,17 @@ const AdminBarberDashboard: React.FC = () => {
           </div>
         </section>
 
-        <section style={styles.section}>
-          <h2 style={styles.sectionTitle}>Ticket-Turns</h2>
-          <Link to="/ticket-turns" style={styles.link}>Go to Ticket-Turns</Link>
+        <section style={estilos.seccion}>
+          <h2 style={estilos.tituloSeccion}>Tickets de Turno</h2>
+          <Link to="/ticket-turnos" style={estilos.enlace}>Ir a Tickets de Turno</Link>
         </section>
       </div>
     </div>
   );
 };
 
-const styles = {
-  wrapper: {
+const estilos = {
+  contenedor: {
     backgroundImage: 'url("/assets/imgs/background-gallery.jpg")',
     backgroundSize: 'cover',
     backgroundPosition: 'center',
@@ -132,7 +147,7 @@ const styles = {
     alignItems: 'center',
     padding: '20px',
   },
-  container: {
+  panel: {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     borderRadius: '8px',
     padding: '20px',
@@ -140,45 +155,45 @@ const styles = {
     maxWidth: '1200px',
     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
   },
-  title: {
+  titulo: {
     fontSize: '24px',
     fontWeight: 'bold' as const,
     marginBottom: '20px',
     textAlign: 'center' as const,
     color: '#333',
   },
-  section: {
+  seccion: {
     marginBottom: '30px',
   },
-  sectionTitle: {
+  tituloSeccion: {
     fontSize: '20px',
     fontWeight: 'bold' as const,
     marginBottom: '10px',
     color: '#444',
   },
-  list: {
+  lista: {
     listStyleType: 'none',
     padding: 0,
   },
-  listItem: {
+  elementoLista: {
     padding: '8px 0',
     borderBottom: '1px solid #eee',
   },
-  appointmentsContainer: {
+  contenedorCitas: {
     display: 'flex',
     justifyContent: 'space-between',
   },
-  appointmentColumn: {
+  columnaCitas: {
     flex: 1,
     margin: '0 10px',
   },
-  columnTitle: {
+  tituloColumna: {
     fontSize: '18px',
     fontWeight: 'bold' as const,
     marginBottom: '10px',
     color: '#555',
   },
-  link: {
+  enlace: {
     display: 'inline-block',
     padding: '10px 20px',
     backgroundColor: '#4CAF50',
@@ -188,6 +203,14 @@ const styles = {
     fontWeight: 'bold' as const,
     transition: 'background-color 0.3s',
   },
+  error: {
+    color: 'red',
+    textAlign: 'center' as const,
+    padding: '20px',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: '8px',
+    margin: '20px',
+  },
 };
 
-export default AdminBarberDashboard;
+export default PanelAdminBarberia;
