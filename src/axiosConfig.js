@@ -31,11 +31,6 @@ axiosInstance.interceptors.response.use(
     if (response) {
       // Manejo de errores según el código de estado
       switch (response.status) {
-        case 400:
-          // Error de solicitud incorrecta (Bad Request)
-          console.error('Solicitud incorrecta:', response.data);
-          alert('Solicitud inválida. Por favor revisa los datos ingresados.');
-          break;
         case 401:
           // Si el token expira o la autenticación falla, redirigir al login
           window.location.href = '/iniciar-sesion';

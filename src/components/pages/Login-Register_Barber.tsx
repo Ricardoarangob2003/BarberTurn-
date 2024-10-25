@@ -24,7 +24,16 @@ const LoginRegister: React.FC = () => {
       );
 
       if (adminEncontrado) {
-        localStorage.setItem('adminData', JSON.stringify(adminEncontrado));
+        // Guarda las credenciales relevantes en localStorage
+        localStorage.setItem('user', JSON.stringify({
+          id: adminEncontrado.id,
+          correo: adminEncontrado.correo,
+          nombre: adminEncontrado.nombre,
+          apellido: adminEncontrado.apellido,
+          local: adminEncontrado.local,
+        }));
+        
+        // Redirige al dashboard
         navigate('/Dashboard-Barberia');
       } else {
         alert('Credenciales incorrectas. Por favor, intenta de nuevo.');
@@ -61,17 +70,15 @@ const LoginRegister: React.FC = () => {
         local
       });
 
-      localStorage.setItem('adminData', JSON.stringify({
-        ...respuestaAdmin.data,
-        local: {
-          nombre: local,
-          direccion,
-          telefono
-        }
+      localStorage.setItem('user', JSON.stringify({
+        id: respuestaAdmin.data.id,
+        correo: respuestaAdmin.data.correo,
+        nombre: respuestaAdmin.data.nombre,
+        apellido: respuestaAdmin.data.apellido,
+        local: respuestaAdmin.data.local,
       }));
 
-      setEsLogin(true); // Cambiar a la vista de login
-      alert('Registro exitoso. Por favor, inicia sesión.');
+      navigate('/Dashboard-Barberia');
     } catch (error) {
       console.error('Error en el registro:', error);
       alert('Registro fallido. Por favor, intenta de nuevo.');

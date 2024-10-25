@@ -1,142 +1,146 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../../axiosConfig';
 
-interface Barbero {
+interface Barber {
   id: string;
   nombre: string;
   especialidad: string;
   local: string;
 }
 
-interface Cita {
+interface Turno {
   id: string;
   nombreCliente: string;
   fecha: string;
-  local: string;
-  estado: 'completado' | 'pendiente' | 'cancelado';
+  estado: 'pendiente' | 'completado' | 'cancelado';
+  emailBarbero: string;
 }
 
-interface DatosAdmin {
+interface UserData {
   id: string;
+  correo: string;
   nombre: string;
+  apellido: string;
   local: string;
 }
 
-const PanelAdminBarberia: React.FC = () => {
-  const [barberos, setBarberos] = useState<Barbero[]>([]);
-  const [citas, setCitas] = useState<Cita[]>([]);
-  const [datosAdmin, setDatosAdmin] = useState<DatosAdmin | null>(null);
+const AdminBarber: React.FC = () => {
+  const [barbers, setBarbers] = useState<Barber[]>([]);
+  const [turnos, setTurnos] = useState<Turno[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const datosAdminAlmacenados = localStorage.getItem('adminData');
-    if (datosAdminAlmacenados) {
-      setDatosAdmin(JSON.parse(datosAdminAlmacenados));
+    const storedUserData = localStorage.getItem('user');
+    if (!storedUserData) {
+      setError('No se encontró información de usuario. Por favor, inicia sesión nuevamente.');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const parsedUserData: UserData = JSON.parse(storedUserData);
+      setUserData(parsedUserData);
+      fetchData(parsedUserData);
+    } catch (error) {
+      console.error('Error al parsear los datos del usuario:', error);
+      setError('Error al cargar los datos del usuario. Por favor, inicia sesión nuevamente.');
+      setLoading(false);
     }
   }, []);
 
-  useEffect(() => {
-    const obtenerDatos = async () => {
-      if (datosAdmin && datosAdmin.local) {
-        try {
-          const [respuestaBarberos, respuestaCitas] = await Promise.all([
-            api.get('/barberos'),
-            api.get('/turnos')
-          ]);
+  const fetchData = async (userData: UserData) => {
+    try {
+      const [barbersResponse, turnosResponse] = await Promise.all([
+        api.get('/barberos'),
+        api.get('/turno')
+      ]);
 
-          const barberosFiltrados = respuestaBarberos.data.filter((barbero: Barbero) => barbero.local === datosAdmin.local);
-          setBarberos(barberosFiltrados);
+      const filteredBarbers = barbersResponse.data.filter(
+        (barber: Barber) => barber.local.toLowerCase() === userData.local.toLowerCase()
+      );
+      setBarbers(filteredBarbers);
 
-          const citasFiltradas = respuestaCitas.data.filter((cita: Cita) => cita.local === datosAdmin.local);
-          setCitas(citasFiltradas);
+      const filteredTurnos = turnosResponse.data.filter(
+        (turno: Turno) => turno.emailBarbero === userData.correo
+      );
+      setTurnos(filteredTurnos);
 
-          setError(null);
-        } catch (error) {
-          console.error('Error al obtener datos:', error);
-          setError('Error al cargar los datos. Por favor, intenta de nuevo más tarde.');
-        }
-      }
-    };
-
-    obtenerDatos();
-  }, [datosAdmin]);
-
-  const filtrarCitas = (estado: 'completado' | 'pendiente' | 'cancelado') => {
-    return citas.filter(cita => cita.estado === estado);
+      setLoading(false);
+    } catch (err) {
+      console.error('Error al obtener datos:', err);
+      setError('Error al cargar los datos. Por favor, intenta de nuevo.');
+      setLoading(false);
+    }
   };
 
-  if (!datosAdmin) {
-    return <div>Cargando...</div>;
-  }
+  const handleTicketTurnosClick = () => {
+    navigate('/ticket-turnos');
+  };
 
-  if (error) {
-    return <div style={estilos.error}>{error}</div>;
-  }
+  if (loading) return <div style={styles.loading}>Cargando...</div>;
+  if (error) return <div style={styles.error}>{error}</div>;
+  if (!userData) return <div style={styles.error}>No se pudo cargar la información del usuario.</div>;
 
   return (
-    <div style={estilos.contenedor}>
-      <div style={estilos.panel}>
-        <h1 style={estilos.titulo}>Panel de Administración - {datosAdmin.local}</h1>
-        
-        <section style={estilos.seccion}>
-          <h2 style={estilos.tituloSeccion}>Barberos Registrados</h2>
-          <ul style={estilos.lista}>
-            {barberos.map(barbero => (
-              <li key={barbero.id} style={estilos.elementoLista}>
-                {barbero.nombre} - {barbero.especialidad}
+    <div style={styles.container}>
+      <div style={styles.panel}>
+        <h1 style={styles.title}>Panel de Administración - {userData.local}</h1>
+
+        <section style={styles.section}>
+          <h2 style={styles.sectionTitle}>Barberos</h2>
+          <ul style={styles.list}>
+            {barbers.map(barber => (
+              <li key={barber.id} style={styles.listItem}>
+                {barber.nombre} - {barber.especialidad}
               </li>
             ))}
           </ul>
         </section>
 
-        <section style={estilos.seccion}>
-          <h2 style={estilos.tituloSeccion}>Citas</h2>
-          <div style={estilos.contenedorCitas}>
-            <div style={estilos.columnaCitas}>
-              <h3 style={estilos.tituloColumna}>Completadas</h3>
-              <ul style={estilos.lista}>
-                {filtrarCitas('completado').map(cita => (
-                  <li key={cita.id} style={estilos.elementoLista}>
-                    {cita.nombreCliente} - {cita.fecha}
-                  </li>
-                ))}
+        <section style={styles.section}>
+          <h2 style={styles.sectionTitle}>Turnos</h2>
+          <div style={styles.columns}>
+            <div style={styles.column}>
+              <h3 style={styles.columnTitle}>Pendientes</h3>
+              <ul style={styles.list}>
+                {turnos
+                  .filter(turno => turno.estado === 'pendiente')
+                  .map(turno => (
+                    <li key={turno.id} style={styles.listItem}>
+                      {turno.nombreCliente} - {turno.fecha}
+                    </li>
+                  ))}
               </ul>
             </div>
-            <div style={estilos.columnaCitas}>
-              <h3 style={estilos.tituloColumna}>Pendientes</h3>
-              <ul style={estilos.lista}>
-                {filtrarCitas('pendiente').map(cita => (
-                  <li key={cita.id} style={estilos.elementoLista}>
-                    {cita.nombreCliente} - {cita.fecha}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div style={estilos.columnaCitas}>
-              <h3 style={estilos.tituloColumna}>Canceladas</h3>
-              <ul style={estilos.lista}>
-                {filtrarCitas('cancelado').map(cita => (
-                  <li key={cita.id} style={estilos.elementoLista}>
-                    {cita.nombreCliente} - {cita.fecha}
-                  </li>
-                ))}
+            <div style={styles.column}>
+              <h3 style={styles.columnTitle}>Completados</h3>
+              <ul style={styles.list}>
+                {turnos
+                  .filter(turno => turno.estado === 'completado')
+                  .map(turno => (
+                    <li key={turno.id} style={styles.listItem}>
+                      {turno.nombreCliente} - {turno.fecha}
+                    </li>
+                  ))}
               </ul>
             </div>
           </div>
         </section>
 
-        <section style={estilos.seccion}>
-          <h2 style={estilos.tituloSeccion}>Tickets de Turno</h2>
-          <Link to="/ticket-turnos" style={estilos.enlace}>Ir a Tickets de Turno</Link>
-        </section>
+        <button onClick={handleTicketTurnosClick} style={styles.button}>
+          Ir a Ticket-Turnos
+        </button>
       </div>
     </div>
   );
 };
 
-const estilos = {
-  contenedor: {
+const styles = {
+  container: {
     backgroundImage: 'url("/assets/imgs/background-gallery.jpg")',
     backgroundSize: 'cover',
     backgroundPosition: 'center',
@@ -151,57 +155,52 @@ const estilos = {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     borderRadius: '8px',
     padding: '20px',
+    maxWidth: '800px',
     width: '100%',
-    maxWidth: '1200px',
     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
   },
-  titulo: {
+  title:  {
     fontSize: '24px',
     fontWeight: 'bold' as const,
     marginBottom: '20px',
     textAlign: 'center' as const,
     color: '#333',
   },
-  seccion: {
+  section: {
     marginBottom: '30px',
   },
-  tituloSeccion: {
+  sectionTitle: {
     fontSize: '20px',
     fontWeight: 'bold' as const,
     marginBottom: '10px',
     color: '#444',
   },
-  lista: {
+  list: {
     listStyleType: 'none',
     padding: 0,
   },
-  elementoLista: {
+  listItem: {
     padding: '8px 0',
     borderBottom: '1px solid #eee',
   },
-  contenedorCitas: {
+  columns: {
     display: 'flex',
     justifyContent: 'space-between',
   },
-  columnaCitas: {
+  column: {
     flex: 1,
     margin: '0 10px',
   },
-  tituloColumna: {
+  columnTitle: {
     fontSize: '18px',
     fontWeight: 'bold' as const,
     marginBottom: '10px',
     color: '#555',
   },
-  enlace: {
-    display: 'inline-block',
-    padding: '10px 20px',
-    backgroundColor: '#4CAF50',
-    color: 'white',
-    textDecoration: 'none',
-    borderRadius: '4px',
-    fontWeight: 'bold' as const,
-    transition: 'background-color 0.3s',
+  loading: {
+    textAlign: 'center' as const,
+    padding: '20px',
+    color: '#333',
   },
   error: {
     color: 'red',
@@ -211,6 +210,19 @@ const estilos = {
     borderRadius: '8px',
     margin: '20px',
   },
+  button: {
+    backgroundColor: '#4CAF50',
+    border: 'none',
+    color: 'white',
+    padding: '15px 32px',
+    textAlign: 'center' as const,
+    textDecoration: 'none',
+    display: 'inline-block',
+    fontSize: '16px',
+    margin: '4px 2px',
+    cursor: 'pointer',
+    borderRadius: '4px',
+  },
 };
 
-export default PanelAdminBarberia;
+export default AdminBarber;
