@@ -11,10 +11,12 @@ interface Barber {
 
 interface Turno {
   id: string;
-  nombreCliente: string;
+  cliente: string;
   fecha: string;
+  hora: string;
   estado: 'pendiente' | 'completado' | 'cancelado';
   emailBarbero: string;
+  local: string;
 }
 
 interface UserData {
@@ -31,6 +33,7 @@ const AdminBarber: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
+  const [showCompleted, setShowCompleted] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -59,13 +62,16 @@ const AdminBarber: React.FC = () => {
         api.get('/turno')
       ]);
 
+      console.log('Datos de barberos:', barbersResponse.data);
+      console.log('Datos de turnos:', turnosResponse.data);
+
       const filteredBarbers = barbersResponse.data.filter(
         (barber: Barber) => barber.local.toLowerCase() === userData.local.toLowerCase()
       );
       setBarbers(filteredBarbers);
 
       const filteredTurnos = turnosResponse.data.filter(
-        (turno: Turno) => turno.emailBarbero === userData.correo
+        (turno: Turno) => turno.local.toLowerCase() === userData.local.toLowerCase()
       );
       setTurnos(filteredTurnos);
 
@@ -81,9 +87,16 @@ const AdminBarber: React.FC = () => {
     navigate('/ticket-turnos');
   };
 
+  const toggleCompletedTurnos = () => {
+    setShowCompleted(!showCompleted);
+  };
+
   if (loading) return <div style={styles.loading}>Cargando...</div>;
   if (error) return <div style={styles.error}>{error}</div>;
   if (!userData) return <div style={styles.error}>No se pudo cargar la información del usuario.</div>;
+
+  const pendingTurnos = turnos.filter(turno => turno.estado === 'pendiente');
+  const completedTurnos = turnos.filter(turno => turno.estado === 'completado');
 
   return (
     <div style={styles.container}>
@@ -107,26 +120,31 @@ const AdminBarber: React.FC = () => {
             <div style={styles.column}>
               <h3 style={styles.columnTitle}>Pendientes</h3>
               <ul style={styles.list}>
-                {turnos
-                  .filter(turno => turno.estado === 'pendiente')
-                  .map(turno => (
-                    <li key={turno.id} style={styles.listItem}>
-                      {turno.nombreCliente} - {turno.fecha}
-                    </li>
-                  ))}
+                {pendingTurnos.map(turno => (
+                  <li key={turno.id} style={styles.listItem}>
+                    <div>Hora: {turno.hora}</div>
+                    <div>Cliente: {turno.cliente}</div>
+                    <div>Barbero: {turno.emailBarbero}</div>
+                  </li>
+                ))}
               </ul>
             </div>
             <div style={styles.column}>
-              <h3 style={styles.columnTitle}>Completados</h3>
-              <ul style={styles.list}>
-                {turnos
-                  .filter(turno => turno.estado === 'completado')
-                  .map(turno => (
+              <h3 style={styles.columnTitle} onClick={toggleCompletedTurnos}>
+                Completados {showCompleted ? '▲' : '▼'}
+              </h3>
+              {showCompleted && (
+                <ul style={styles.list}>
+                  {completedTurnos.map(turno => (
                     <li key={turno.id} style={styles.listItem}>
-                      {turno.nombreCliente} - {turno.fecha}
+                      <div>Fecha: {turno.fecha}</div>
+                      <div>Hora: {turno.hora}</div>
+                      <div>Cliente: {turno.cliente}</div>
+                      <div>Barbero: {turno.emailBarbero}</div>
                     </li>
                   ))}
-              </ul>
+                </ul>
+              )}
             </div>
           </div>
         </section>
@@ -196,6 +214,7 @@ const styles = {
     fontWeight: 'bold' as const,
     marginBottom: '10px',
     color: '#555',
+    cursor: 'pointer',
   },
   loading: {
     textAlign: 'center' as const,

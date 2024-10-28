@@ -5,15 +5,22 @@ import { Instagram, Youtube, Phone } from 'lucide-react';
 const Index: React.FC = () => {
   return (
     <div style={styles.container}>
+      {/* Enlace para barberías en la esquina superior derecha */}
+      <div style={styles.topRightLink}>
+        <Link to="/iniciar-sesion-barberia" style={styles.barberLink}>
+          ¿Eres una barbería? Ingresa aquí
+        </Link>
+      </div>
+
       <div style={styles.content}>
         <h1 style={styles.title}>BarberTurn</h1>
-        <img src="/assets/imgs/1.png" alt="BarberTurn Logo" style={styles.logo} />
+        <img src="/assets/imgs/logo.png" alt="BarberTurn Logo" style={styles.logo} />
         <p style={styles.tagline}>
           RESERVA TU CORTE DE CABELLO EN LA COMODIDAD DE TU HOGAR...
         </p>
         
         <div style={styles.buttonGrid}>
-          <Link to="/premium" style={{...styles.button,}}>
+          <Link to="/premium" style={styles.button}>
             PREMIUM
           </Link>
           <Link to="/galeria" style={styles.button}>
@@ -29,15 +36,15 @@ const Index: React.FC = () => {
       </div>
       
       <footer style={styles.footer}>
-      <a href="https://www.instagram.com/barber_turn/" style={styles.socialIcon} aria-label="Instagram"target='_blank' rel="noreferrer noopener"> <Instagram />
-
+        <a href="https://www.instagram.com/barber_turn/" style={styles.socialIcon} aria-label="Instagram" target='_blank' rel="noreferrer noopener">
+          <Instagram />
         </a>
-        <a href="https:youtube.com" style={styles.socialIcon} aria-label="youtube"target='_blank' rel="noreferrer noopener"> <Youtube />
-
-</a>
-<a href="https://www.whatsapp.com" style={styles.socialIcon} aria-label="whatsapp"target='_blank' rel="noreferrer noopener"> <Phone />
-
-</a>
+        <a href="https://youtube.com" style={styles.socialIcon} aria-label="YouTube" target='_blank' rel="noreferrer noopener">
+          <Youtube />
+        </a>
+        <a href="https://www.whatsapp.com" style={styles.socialIcon} aria-label="WhatsApp" target='_blank' rel="noreferrer noopener">
+          <Phone />
+        </a>
       </footer>
     </div>
   );
@@ -54,6 +61,21 @@ const styles = {
     backgroundPosition: 'center',
     color: 'white',
     textAlign: 'center' as const,
+  },
+  topRightLink: {
+    position: 'absolute' as const,
+    top: '1rem',
+    right: '1rem',
+  },
+  barberLink: {
+    color: 'white',
+    textDecoration: 'none',
+    fontWeight: 'bold',
+    fontSize: '1rem',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    padding: '0.5rem 1rem',
+    borderRadius: '5px',
+    transition: 'background-color 0.3s',
   },
   content: {
     flex: 1,
