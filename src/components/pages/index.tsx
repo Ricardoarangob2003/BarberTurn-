@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Instagram, Youtube, Phone } from 'lucide-react';
+import { Instagram, Youtube, Phone, Facebook } from 'lucide-react';
 
 const Index: React.FC = () => {
   return (
@@ -16,7 +16,7 @@ const Index: React.FC = () => {
         <h1 style={styles.title}>BarberTurn</h1>
         <img src="/assets/imgs/logo.png" alt="BarberTurn Logo" style={styles.logo} />
         <p style={styles.tagline}>
-          RESERVA TU CORTE DE CABELLO EN LA COMODIDAD DE TU HOGAR...
+          EL FUTURO DEL CORTE: SIN FILAS, SIN ESPERAS...
         </p>
         
         <div style={styles.buttonGrid}>
@@ -39,8 +39,8 @@ const Index: React.FC = () => {
         <a href="https://www.instagram.com/barber_turn/" style={styles.socialIcon} aria-label="Instagram" target='_blank' rel="noreferrer noopener">
           <Instagram />
         </a>
-        <a href="https://youtube.com" style={styles.socialIcon} aria-label="YouTube" target='_blank' rel="noreferrer noopener">
-          <Youtube />
+        <a href="https://facebook.com" style={styles.socialIcon} aria-label="Facebook" target='_blank' rel="noreferrer noopener">
+          <Facebook />
         </a>
         <a href="https://www.whatsapp.com" style={styles.socialIcon} aria-label="WhatsApp" target='_blank' rel="noreferrer noopener">
           <Phone />
@@ -92,12 +92,12 @@ const styles = {
     marginBottom: '1rem',
   },
   logo: {
-    width: '100px',
-    height: '100px',
+    width: '250px',
+    height: '250px',
     marginBottom: '1rem',
   },
   tagline: {
-    fontSize: '1.2rem',
+    fontSize: '1.4rem',
     marginBottom: '2rem',
     maxWidth: '600px',
   },
