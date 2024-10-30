@@ -158,7 +158,7 @@ const MisTurnos: React.FC = () => {
             </div>
           </>
         )}
-        <button onClick={() => navigate('/reserva-turno')} style={styles.newAppointmentButton}>
+        <button onClick={() => navigate('/barberias-disponibles')} style={styles.newAppointmentButton}>
           Reservar Nuevo Turno
         </button>
       </div>

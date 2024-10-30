@@ -1,29 +1,63 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Star } from 'lucide-react';
+import axiosInstance from '../../axiosConfig';
 
 interface Barbershop {
   id: string;
-  name: string;
-  slogan: string;
-  rating: number;
+  local: string;
+  direccion: string;
+  telefono: string;
+  calificacion: number;
 }
 
-const barbershops: Barbershop[] = [
-  { id: 'barbafina', name: 'Barbafina', slogan: 'Slogan', rating: 5 },
-  { id: 'tucorte', name: 'Tu Corte', slogan: 'Slogan', rating: 4 },
-  { id: 'barbershop', name: 'Barbershop', slogan: 'Slogan', rating: 3 },
-  { id: 'urbanbarber', name: 'Urban Barber', slogan: 'Slogan', rating: 2 },
-];
-
 const BarberiasDisponibles: React.FC = () => {
-  const navigate = useNavigate();
+  const [barbershops, setBarbershops] = useState<Barbershop[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchBarbershops = async () => {
+      try {
+        const response = await axiosInstance.get('local');
+        setBarbershops(response.data);
+        setIsLoading(false);
+      } catch (err) {
+        console.error('Error fetching barbershops:', err);
+        setError('Error al cargar las barberías. Por favor, intente de nuevo más tarde.');
+        setIsLoading(false);
+      }
+    };
+
+    fetchBarbershops();
+  }, []);
 
   const handleBarbershopSelect = (id: string, name: string) => {
-    // Guardar el local seleccionado en localStorage
     localStorage.setItem('selectedLocal', name);
-    navigate(`/barberos-disponibles/${id}`);
+    localStorage.setItem('selectedLocalId', id);
   };
+
+  if (isLoading) {
+    return (
+      <div style={styles.container}>
+        <div style={styles.content}>
+          <h1 style={styles.title}>BarberTurn</h1>
+          <p style={styles.loadingText}>Cargando barberías...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={styles.container}>
+        <div style={styles.content}>
+          <h1 style={styles.title}>BarberTurn</h1>
+          <p style={styles.errorText}>{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={styles.container}>
@@ -32,10 +66,11 @@ const BarberiasDisponibles: React.FC = () => {
         <h2 style={styles.subtitle}>Barberías Disponibles</h2>
         <div style={styles.barberList}>
           {barbershops.map((shop) => (
-            <div
+            <Link
               key={shop.id}
+              to={`/barberos-disponibles/${encodeURIComponent(shop.local)}`}
               style={styles.barberLink}
-              onClick={() => handleBarbershopSelect(shop.id, shop.name)}
+              onClick={() => handleBarbershopSelect(shop.id, shop.local)}
             >
               <div style={styles.barberItem}>
                 <div style={styles.profilePicture}>
@@ -45,21 +80,21 @@ const BarberiasDisponibles: React.FC = () => {
                   </svg>
                 </div>
                 <div style={styles.barberInfo}>
-                  <h3 style={styles.barberName}>{shop.name}</h3>
-                  <p style={styles.barberSlogan}>{shop.slogan}</p>
+                  <h3 style={styles.barberName}>{shop.local}</h3>
+                  <p style={styles.barberSlogan}>{shop.direccion}</p>
                   <div style={styles.stars}>
                     {[...Array(5)].map((_, index) => (
                       <Star
                         key={index}
                         size={12}
-                        fill={index < shop.rating ? 'gold' : 'none'}
-                        stroke={index < shop.rating ? 'gold' : 'gray'}
+                        fill={index < shop.calificacion ? 'gold' : 'none'}
+                        stroke={index < shop.calificacion ? 'gold' : 'gray'}
                       />
                     ))}
                   </div>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
         <div style={styles.footer}>
@@ -69,6 +104,7 @@ const BarberiasDisponibles: React.FC = () => {
     </div>
   );
 };
+
 
 const styles = {
   container: {
@@ -112,7 +148,7 @@ const styles = {
     color: 'inherit',
     flex: '1 1 200px',
     maxWidth: '250px',
-    cursor: 'pointer',  // Esto habilita el clic
+    cursor: 'pointer',
   },
   barberItem: {
     display: 'flex',
@@ -161,6 +197,16 @@ const styles = {
     textAlign: 'center' as const,
     fontSize: '0.9em',
     color: '#666',
+  },
+  loadingText: {
+    textAlign: 'center' as const,
+    fontSize: '1.2em',
+    color: '#666',
+  },
+  errorText: {
+    textAlign: 'center' as const,
+    fontSize: '1.2em',
+    color: '#ff0000',
   },
 };
 

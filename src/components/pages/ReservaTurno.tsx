@@ -278,6 +278,9 @@ const validateDate = (selectedDate: string) => {
           </div>
           <button type="submit" style={styles.button}>Reservar Turno</button>
         </form>
+        <button onClick={() => navigate('/mis-turnos')} style={styles.verTurnosButton}>
+  Ver mis turnos
+</button>
       </div>
 
       {showSummary && (
@@ -303,6 +306,7 @@ const validateDate = (selectedDate: string) => {
               <button onClick={confirmReservation} style={styles.confirmButton} disabled={isLoading}>
                 {isLoading ? 'Confirmando...' : 'Confirmar Reserva'}
               </button>
+              
             </div>
           </div>
         </div>
@@ -491,7 +495,21 @@ const styles = {
     padding: '10px 20px',
     borderRadius: '5px',
     zIndex: 1000,
+
   },
+  verTurnosButton: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '5px',
+    padding: '10px 15px',
+    backgroundColor: '#2196F3', // Color diferente para identificarlo
+    color: 'white',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    marginTop: '10px', // Ajuste de separación con otros elementos
+  },
+  
   errorNotification: {
     position: 'fixed' as const,
     top: '20px',

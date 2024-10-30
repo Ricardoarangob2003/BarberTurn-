@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Star, Scissors } from 'lucide-react';
 import axiosInstance from '../../axiosConfig';
 
 interface Barber {
   id: string;
   nombre: string;
-  precio: number;
-  calificacion: number;
   local: string;
   email?: string;
 }
@@ -16,13 +14,15 @@ const BarberosDisponibles: React.FC = () => {
   const [barbers, setBarbers] = useState<Barber[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const { nombreBarberia } = useParams<{ nombreBarberia: string }>();
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchBarbers = async () => {
       try {
         const response = await axiosInstance.get<Barber[]>('/barberos');
-        const filteredBarbers = response.data.filter(barber => barber.local.toLowerCase() === 'urbanbarber');
+        const decodedNombreBarberia = decodeURIComponent(nombreBarberia || '');
+        const filteredBarbers = response.data.filter(barber => barber.local === decodedNombreBarberia);
         setBarbers(filteredBarbers);
         setLoading(false);
       } catch (err) {
@@ -33,54 +33,49 @@ const BarberosDisponibles: React.FC = () => {
     };
 
     fetchBarbers();
-  }, []);
+  }, [nombreBarberia]);
 
   const handleBarberSelect = (barber: Barber) => {
     localStorage.setItem('selectedBarberName', barber.nombre);
     localStorage.setItem('selectedBarberEmail', barber.email || '');
     localStorage.setItem('selectedBarberId', barber.id);
-    navigate(`/Galeria-Seleccionable`);
+    navigate('/Galeria-Seleccionable');
   };
 
   if (loading) {
     return <div style={styles.loading}>Cargando barberos...</div>;
   }
 
+  if (error) {
+    return <div style={styles.error}>{error}</div>;
+  }
+
   return (
     <div style={styles.container}>
       <div style={styles.content}>
         <h1 style={styles.title}>BarberTurn</h1>
-        <h2 style={styles.subtitle}>Barberos de UrbanBarber</h2>
-        {error && <div style={styles.error}>{error}</div>}
-        <div style={styles.barberList}>
-          {barbers.map((barber) => (
-            <div
-              key={barber.id}
-              onClick={() => handleBarberSelect(barber)}
-              style={styles.barberItem}
-            >
-              <div style={styles.profilePicture}>
-                <Scissors size={30} color="white" />
-              </div>
-              <div style={styles.barberInfo}>
-                <h3 style={styles.barberName}>{barber.nombre}</h3>
-                
-                <div style={styles.stars}>
-                  {[...Array(5)].map((_, index) => (
-                    <Star
-                      key={index}
-                      size={16}
-                      fill={index < barber.calificacion ? 'gold' : 'none'}
-                      stroke={index < barber.calificacion ? 'gold' : 'gray'}
-                    />
-                  ))}
+        <h2 style={styles.subtitle}>Barberos de {decodeURIComponent(nombreBarberia || '')}</h2>
+        {barbers.length === 0 ? (
+          <div style={styles.noResults}>No se encontraron barberos en esta barbería.</div>
+        ) : (
+          <div style={styles.barberList}>
+            {barbers.map((barber) => (
+              <div
+                key={barber.id}
+                onClick={() => handleBarberSelect(barber)}
+                style={styles.barberItem}
+              >
+                <div style={styles.profilePicture}>
+                  <Scissors size={30} color="white" />
+                </div>
+                <div style={styles.barberInfo}>
+                  <h3 style={styles.barberName}>{barber.nombre}</h3>
+                  
+              
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-        {barbers.length === 0 && !error && (
-          <div style={styles.noResults}>No se encontraron barberos en UrbanBarber.</div>
+            ))}
+          </div>
         )}
         <div style={styles.footer}>
           © 2024 BarberTurn. Todos los derechos reservados.
