@@ -9,26 +9,26 @@ interface CortePelo {
 }
 
 const cortesPelo: CortePelo[] = [
-  { id: 1, nombre: "Undercut con textura", imagen: "/assets/imgs/circular/1.png", descripcion: "Parte superior larga con laterales rapados." },
-  { id: 2, nombre: "Pompadour moderno", imagen: "/assets/imgs/circular/2.jpg", descripcion: "Volumen en la parte superior con lados cortos." },
-  { id: 3, nombre: "Corte texturizado", imagen: "/assets/imgs/circular/3.jpg", descripcion: "Estilo desordenado con mucha textura." },
-  { id: 4, nombre: "Fade alto", imagen: "/assets/imgs/circular/4.jpg", descripcion: "Degradado pronunciado en los lados." },
-  { id: 5, nombre: "Corte clásico", imagen: "/assets/imgs/circular/5.jpg", descripcion: "Estilo tradicional y elegante." },
-  { id: 6, nombre: "Mohawk moderno", imagen: "/assets/imgs/circular/6.jpg", descripcion: "Versión actualizada del mohawk clásico." },
-  { id: 7, nombre: "Corte desvanecido", imagen: "/assets/imgs/circular/7.jpg", descripcion: "Transición suave de corto a largo." },
-  { id: 8, nombre: "Peinado hacia atrás", imagen: "/assets/imgs/circular/8.jpg", descripcion: "Estilo elegante y sofisticado." },
-  { id: 9, nombre: "Corte militar", imagen: "/assets/imgs/circular/9.jpg", descripcion: "Corto y fácil de mantener." },
-  { id: 10, nombre: "Flequillo texturizado", imagen: "/assets/imgs/circular/10.jpg", descripcion: "Flequillo con movimiento y textura." },
-  { id: 11, nombre: "Corte en capas", imagen: "/assets/imgs/circular/11.jpg", descripcion: "Múltiples longitudes para más volumen." },
-  { id: 12, nombre: "Corte francés", imagen: "/assets/imgs/circular/12.jpg", descripcion: "Elegante y con estilo europeo." },
-  { id: 13, nombre: "Corte despeinado", imagen: "/assets/imgs/circular/13.jpg", descripcion: "Look casual y desenfadado." },
-  { id: 14, nombre: "Corte con líneas", imagen: "/assets/imgs/circular/14.jpg", descripcion: "Diseños geométricos en el cabello." },
-  { id: 15, nombre: "Tupé moderno", imagen: "/assets/imgs/circular/15.jpg", descripcion: "Versión actualizada del clásico tupé." },
-  { id: 16, nombre: "Corte asimétrico", imagen: "/assets/imgs/circular/16.jpg", descripcion: "Longitudes diferentes a cada lado." },
-  { id: 17, nombre: "Corte con flequillo", imagen: "/assets/imgs/circular/17.jpg", descripcion: "Flequillo prominente y estilizado." },
-  { id: 18, nombre: "Corte con barba", imagen: "/assets/imgs/circular/18.jpg", descripcion: "Combinación de corte y barba estilizada." },
-  { id: 19, nombre: "Corte con rulos", imagen: "/assets/imgs/circular/19.jpg", descripcion: "Realza los rizos naturales." },
-  { id: 20, nombre: "Corte con degradado", imagen: "/assets/imgs/circular/20.jpg", descripcion: "Transición suave de largo a corto." },
+  { id: 1, nombre: "Pompadour bajo", imagen: "/assets/imgs/circular/1.png", descripcion: "Volumen peinado hacia atrás con laterales cortos." },
+  { id: 2, nombre: "Degradado con barba espesa", imagen: "/assets/imgs/circular/2.jpg", descripcion: "Cabello corto en los laterales con barba gruesa." },
+  { id: 3, nombre: "Crew Cut con barba", imagen: "/assets/imgs/circular/3.jpg", descripcion: "Corte militar corto y barba perfilada." },
+  { id: 4, nombre: "Corte formal con barba", imagen: "/assets/imgs/circular/4.jpg", descripcion: "Cabello peinado formal con barba cuidada." },
+  { id: 5, nombre: "Pompadour con barba", imagen: "/assets/imgs/circular/5.jpg", descripcion: "Volumen en la parte superior y barba bien definida." },
+  { id: 6, nombre: "Corte con textura corta", imagen: "/assets/imgs/circular/6.jpg", descripcion: "Cabello corto con textura ligera." },
+  { id: 7, nombre: "Texturizado con barba", imagen: "/assets/imgs/circular/7.jpg", descripcion: "Parte superior con textura desordenada y barba completa." },
+  { id: 8, nombre: "Corte desordenado con barba", imagen: "/assets/imgs/circular/8.jpg", descripcion: "Textura desordenada en la parte superior con barba espesa." },
+  { id: 9, nombre: "Fade bajo con barba", imagen: "/assets/imgs/circular/9.jpg", descripcion: "Degradado suave con barba bien definida." },
+  { id: 10, nombre: "Mohawk", imagen: "/assets/imgs/circular/10.jpg", descripcion: "Laterales rapados con una franja de cabello en el centro." },
+  { id: 11, nombre: "Buzz Cut con degradado", imagen: "/assets/imgs/circular/11.jpg", descripcion: "Corte militar con un degradado sutil." },
+  { id: 12, nombre: "Undercut texturizado", imagen: "/assets/imgs/circular/12.jpg", descripcion: "Parte superior texturizada con laterales rapados." },
+  { id: 13, nombre: "Pompadour clásico", imagen: "/assets/imgs/circular/13.jpg", descripcion: "Volumen peinado hacia atrás con un estilo formal." },
+  { id: 14, nombre: "Degradado con barba", imagen: "/assets/imgs/circular/14.jpg", descripcion: "Degradado alto con barba densa y definida." },
+  { id: 15, nombre: "Flequillo largo con textura", imagen: "/assets/imgs/circular/15.jpg", descripcion: "Flequillo largo y desordenado con laterales cortos" },
+  { id: 16, nombre: "Buzz Cut con barba completa", imagen: "/assets/imgs/circular/16.jpg", descripcion: "Corte corto al ras con barba completa." },
+  { id: 17, nombre: "Corte con degradado medio", imagen: "/assets/imgs/circular/17.jpg", descripcion: "Degradado suave con barba." },
+  { id: 18, nombre: "Corte texturizado con barba espesa", imagen: "/assets/imgs/circular/18.jpg", descripcion: "Cabello corto con textura ligera y barba gruesa." },
+  { id: 19, nombre: "French Crop moderno", imagen: "/assets/imgs/circular/19.jpg", descripcion: "flequillo corto y textura en la parte superior." },
+  { id: 20, nombre: "Degradado alto con textura", imagen: "/assets/imgs/circular/20.jpg", descripcion: "Parte superior con textura y degradado alto." },
 ];
 
 const GaleriaCortesPelo: React.FC = () => {
@@ -36,8 +36,8 @@ const GaleriaCortesPelo: React.FC = () => {
   const navigate = useNavigate();
 
   const seleccionarCorte = (nombre: string) => {
-    localStorage.setItem('corteSeleccionado', nombre);
-    navigate('/reserva-turno/'); // Reemplaza 'barbero123' con el ID real del barbero
+    localStorage.setItem('corte', nombre);
+    navigate('/reserva-turno'); // Reemplaza 'barbero123' con el ID real del barbero
   };
 
   const voltearTarjeta = (id: number) => {

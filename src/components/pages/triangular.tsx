@@ -9,26 +9,26 @@ interface CortePelo {
 }
 
 const cortesPelo: CortePelo[] = [
-  { id: 1, nombre: "Undercut con textura", imagen: "/assets/imgs/triangular/1.jpeg", descripcion: "Parte superior larga con laterales rapados." },
-  { id: 2, nombre: "Pompadour moderno", imagen: "/assets/imgs/triangular/2.jpg", descripcion: "Volumen en la parte superior con lados cortos." },
-  { id: 3, nombre: "Corte texturizado", imagen: "/assets/imgs/triangular/3.jpg", descripcion: "Estilo desordenado con mucha textura." },
-  { id: 4, nombre: "Fade alto", imagen: "/assets/imgs/triangular/4.jpg", descripcion: "Degradado pronunciado en los lados." },
-  { id: 5, nombre: "Corte clásico", imagen: "/assets/imgs/triangular/5.jpg", descripcion: "Estilo tradicional y elegante." },
-  { id: 6, nombre: "Mohawk moderno", imagen: "/assets/imgs/triangular/6.jpg", descripcion: "Versión actualizada del mohawk clásico." },
-  { id: 7, nombre: "Corte desvanecido", imagen: "/assets/imgs/triangular/7.jpg", descripcion: "Transición suave de corto a largo." },
-  { id: 8, nombre: "Peinado hacia atrás", imagen: "/assets/imgs/triangular/8.jpg", descripcion: "Estilo elegante y sofisticado." },
-  { id: 9, nombre: "Corte militar", imagen: "/assets/imgs/triangular/9.jpg", descripcion: "Corto y fácil de mantener." },
-  { id: 10, nombre: "Flequillo texturizado", imagen: "/assets/imgs/triangular/10.jpg", descripcion: "Flequillo con movimiento y textura." },
-  { id: 11, nombre: "Corte en capas", imagen: "/assets/imgs/triangular/11.jpg", descripcion: "Múltiples longitudes para más volumen." },
-  { id: 12, nombre: "Corte francés", imagen: "/assets/imgs/triangular/12.jpg", descripcion: "Elegante y con estilo europeo." },
-  { id: 13, nombre: "Corte despeinado", imagen: "/assets/imgs/triangular/13.jpg", descripcion: "Look casual y desenfadado." },
-  { id: 14, nombre: "Corte con líneas", imagen: "/assets/imgs/triangular/14.jpg", descripcion: "Diseños geométricos en el cabello." },
-  { id: 15, nombre: "Tupé moderno", imagen: "/assets/imgs/triangular/15.jpg", descripcion: "Versión actualizada del clásico tupé." },
-  { id: 16, nombre: "Corte asimétrico", imagen: "/assets/imgs/triangular/16.jpg", descripcion: "Longitudes diferentes a cada lado." },
-  { id: 17, nombre: "Corte con flequillo", imagen: "/assets/imgs/triangular/17.jpg", descripcion: "Flequillo prominente y estilizado." },
-  { id: 18, nombre: "Corte con barba", imagen: "/assets/imgs/triangular/18.jpg", descripcion: "Combinación de corte y barba estilizada." },
-  { id: 19, nombre: "Corte con rulos", imagen: "/assets/imgs/triangular/19.jpg", descripcion: "Realza los rizos naturales." },
-  { id: 20, nombre: "Corte con degradado", imagen: "/assets/imgs/triangular/20.jpg", descripcion: "Transición suave de largo a corto." },
+  { id: 1, nombre: "Buzz Cut", imagen: "/assets/imgs/triangular/1.jpeg", descripcion: "Corte rapado, simple y bajo con líneas definidas." },
+  { id: 2, nombre: "Taper Fade Afro", imagen: "/assets/imgs/triangular/2.jpg", descripcion: "Desvanecido gradual con textura afro y forma definida." },
+  { id: 3, nombre: "Textured Fringe", imagen: "/assets/imgs/triangular/3.jpg", descripcion: "Flequillo texturizado con puntas desordenadas y lados cortos." },
+  { id: 4, nombre: "French Crop", imagen: "/assets/imgs/triangular/4.jpg", descripcion: "Corte corto con flequillo recto y textura arriba." },
+  { id: 5, nombre: "Crew Cut", imagen: "/assets/imgs/triangular/5.jpg", descripcion: "Corte corto con un pequeño desvanecido en los lados." },
+  { id: 6, nombre: "Textured Quiff", imagen: "/assets/imgs/triangular/6.jpg", descripcion: "Quiff voluminoso con textura arriba y laterales cortos." },
+  { id: 7, nombre: "Low Fade", imagen: "/assets/imgs/triangular/7.jpg", descripcion: "Corte bajo con desvanecido gradual en los laterales." },
+  { id: 8, nombre: "High Skin Fade", imagen: "/assets/imgs/triangular/8.jpg", descripcion: "Desvanecido alto con rapado al ras en los lados." },
+  { id: 9, nombre: "Comb Over Fade", imagen: "/assets/imgs/triangular/9.jpg", descripcion: "Lado peinado hacia un costado con desvanecido suave" },
+  { id: 10, nombre: "High Top Fade", imagen: "/assets/imgs/triangular/10.jpg", descripcion: "arte superior alta con desvanecido bajo." },
+  { id: 11, nombre: "Skin Fade con barba", imagen: "/assets/imgs/triangular/11.jpg", descripcion: "Desvanecido bajo con líneas definidas y barba conectada." },
+  { id: 12, nombre: "High Fade", imagen: "/assets/imgs/triangular/12.jpg", descripcion: "Desvanecido alto con cabello más largo en la parte superior." },
+  { id: 13, nombre: "Pompadour", imagen: "/assets/imgs/triangular/13.jpg", descripcion: "Volumen alto peinado hacia atrás, desvanecido en los lados." },
+  { id: 14, nombre: "Wavy Crop:", imagen: "/assets/imgs/triangular/14.jpg", descripcion: "Corte corto con textura ondulada y desvanecido bajo." },
+  { id: 15, nombre: "Buzz Cut Fade", imagen: "/assets/imgs/triangular/15.jpg", descripcion: "Rapado al ras con desvanecido gradual." },
+  { id: 16, nombre: "Curly Fade", imagen: "/assets/imgs/triangular/16.jpg", descripcion: "Rizos definidos con desvanecido bajo." },
+  { id: 17, nombre: "Caesar Cut", imagen: "/assets/imgs/triangular/17.jpg", descripcion: "Corte corto con flequillo recto, textura sutil." },
+  { id: 18, nombre: "Curly Taper Fade", imagen: "/assets/imgs/triangular/18.jpg", descripcion: "Rizos definidos con un desvanecido gradual." },
+  { id: 19, nombre: "Skin Fade Short Crop", imagen: "/assets/imgs/triangular/19.jpg", descripcion: "Corte corto con desvanecido al ras en los lados." },
+  { id: 20, nombre: "Crew Cut Fade", imagen: "/assets/imgs/triangular/20.jpg", descripcion: "Corte crew con un leve desvanecido." },
 ];
 
 const GaleriaCortesPelo: React.FC = () => {
@@ -36,7 +36,7 @@ const GaleriaCortesPelo: React.FC = () => {
   const navigate = useNavigate();
 
   const seleccionarCorte = (nombre: string) => {
-    localStorage.setItem('corteSeleccionado', nombre);
+    localStorage.setItem('corte', nombre);
     navigate('/reserva-turno/'); // Reemplaza 'barbero123' con el ID real del barbero
   };
 
