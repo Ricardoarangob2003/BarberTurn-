@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Instagram, Youtube, Phone, Facebook } from 'lucide-react';
+import { Instagram, Phone, Facebook } from 'lucide-react';
 
 const Index: React.FC = () => {
   return (

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Calendar, X, ChevronDown, ChevronUp, Check } from 'lucide-react';
-import axiosInstance, { api } from '../../axiosConfig';
+import { LogOut, Calendar, X, ChevronDown, ChevronUp, Check, Clock } from 'lucide-react';
+import axiosInstance from '../../axiosConfig';
 
 interface User {
   id: string;
@@ -29,66 +29,131 @@ interface Notification {
   type: 'success' | 'error';
 }
 
+const initialReservationState: Reservation = {
+  barbero: '',
+  local: '',
+  fecha: '',
+  estado: 'Pendiente',
+  corte: '',
+  adicional: '',
+  emailBarbero: '',
+  emailCliente: '',
+  cliente: '',
+  hora: ''
+};
+
 const ReservaTurno: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
-  const [reservation, setReservation] = useState<Reservation>({
-    barbero: '',
-    local: '',
-    fecha: '',
-    estado: 'Pendiente',
-    corte: '',
-    adicional: '',
-    emailBarbero: '',
-    emailCliente: '',
-    cliente: '',
-    hora: '',
-  });
+  const [reservation, setReservation] = useState<Reservation>(initialReservationState);
   const [showSummary, setShowSummary] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showServices, setShowServices] = useState(false);
   const [notification, setNotification] = useState<Notification>({ show: false, message: '', type: 'success' });
+  const [availableHours, setAvailableHours] = useState<string[]>([]);
   const navigate = useNavigate();
 
   const serviciosAdicionales = ['Tinte', 'Mascarilla', 'Depilación de cejas'];
 
   useEffect(() => {
-    const storedBarberName = localStorage.getItem('selectedBarberName') || '';
-    const storedBarberEmail = localStorage.getItem('selectedBarberEmail') || '';
-    const storedBarberId = localStorage.getItem('selectedBarberId') || '';
-    const storedCorte = localStorage.getItem('corte') || '';
-    const userData = localStorage.getItem('user');
-    const storedLocal = localStorage.getItem('selectedLocal') || 'name';
-
-    if (userData) {
-      const parsedUser = JSON.parse(userData);
-      setUser(parsedUser);
-      setReservation((prev) => ({
-        ...prev,
-        barbero: storedBarberName,
-        emailBarbero: storedBarberEmail,
-        corte: storedCorte,
-        cliente: `${parsedUser.nombre} ${parsedUser.apellido}`,
-        emailCliente: parsedUser.email,
-        local: storedLocal
-      }));
-    } else {
+    const storedData = fetchStoredData();
+    if (!storedData.user) {
       navigate('/iniciar-sesion');
+    } else {
+      initializeReservation(storedData);
     }
   }, [navigate]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setReservation((prev) => ({ ...prev, [name]: value }));
+  const fetchStoredData = () => ({
+    user: JSON.parse(localStorage.getItem('user') || 'null'),
+    barberName: localStorage.getItem('selectedBarberName') || '',
+    barberEmail: localStorage.getItem('selectedBarberEmail') || '',
+    corte: localStorage.getItem('corte') || '',
+    local: localStorage.getItem('selectedLocal') || 'name'
+  });
+
+  const initializeReservation = (data: ReturnType<typeof fetchStoredData>) => {
+    if (data.user) {
+      setUser(data.user);
+      setReservation((prev) => ({
+        ...prev,
+        barbero: data.barberName,
+        emailBarbero: data.barberEmail,
+        corte: data.corte,
+        cliente: `${data.user.nombre} ${data.user.apellido}`,
+        emailCliente: data.user.email,
+        local: data.local
+      }));
+    }
   };
 
-  const handleServiceToggle = (service: string) => {
-    setReservation((prev) => {
-      const updatedAdicional = prev.adicional ? prev.adicional.split(',') : [];
-      if (updatedAdicional.includes(service)) {
-        return { ...prev, adicional: updatedAdicional.filter((s) => s !== service).join(',') };
-      } else {
-        return { ...prev, adicional: [...updatedAdicional, service].join(',') };
+  const generateTimeSlots = (startHour: number, endHour: number, interval: number): string[] => {
+    const slots = [];
+    for (let hour = startHour; hour < endHour; hour++) {
+      for (let minute = 0; minute < 60; minute += interval) {
+        const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+        slots.push(time);
       }
+    }
+    return slots;
+  };
+
+  const updateAvailableHours = (selectedDate: string) => {
+    const today = new Date();
+    const selectedDateObj = new Date(selectedDate);
+    selectedDateObj.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+
+    const isToday = selectedDateObj.getTime() === today.getTime();
+    const currentHour = isToday ? new Date().getHours() : 9;
+    const slots = generateTimeSlots(Math.max(9, currentHour), 21, 15);
+
+    setAvailableHours(isToday ? filterCurrentDaySlots(slots) : slots);
+  };
+
+  const filterCurrentDaySlots = (slots: string[]): string[] => {
+    const now = new Date();
+    return slots.filter((time) => {
+      const [hour, minute] = time.split(':').map(Number);
+      return hour > now.getHours() || (hour === now.getHours() && minute > now.getMinutes());
+    });
+  };
+
+ 
+   // Modificación en `handleInputChange`
+const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const { name, value } = e.target;
+  if (name === 'fecha') {
+      if (validateDate(value)) {
+          updateAvailableHours(value);
+      } else {
+          alert('Por favor, seleccione una fecha válida (hoy o en el futuro).');
+          return;
+      }
+  }
+  setReservation((prev) => ({ ...prev, [name]: value }));
+};
+
+// Nueva implementación de `validateDate`:
+const validateDate = (selectedDate: string) => {
+  const today = new Date();
+  const selectedDateObj = new Date(selectedDate);
+
+  // Redondea el valor de hoy para que sólo cuente la fecha
+  today.setHours(0, 0, 0, 0);
+  selectedDateObj.setHours(0, 0, 0, 0);
+
+  // Devuelve true si la fecha es hoy o posterior
+  return selectedDateObj.getTime() >= today.getTime();
+};
+
+
+  const toggleService = (service: string) => {
+    setReservation((prev) => {
+      const services = prev.adicional ? prev.adicional.split(',') : [];
+      const updatedServices = services.includes(service)
+        ? services.filter((s) => s !== service)
+        : [...services, service];
+      return { ...prev, adicional: updatedServices.join(',') };
     });
   };
 
@@ -99,21 +164,14 @@ const ReservaTurno: React.FC = () => {
 
   const confirmReservation = async () => {
     setIsLoading(true);
-    console.log('Datos enviados:', reservation); // Verificar qué datos se envían
-
-  
-
     try {
-      console.log('Datos enviados:', reservation);
-  
       const response = await axiosInstance.post('http://localhost:8090/api/turno/post', reservation);
-      if (response.status === 200 || response.status === 201) {
-        setNotification({ show: true, message: '¡Reserva confirmada con éxito!', type: 'success' });
-      } else {
-        throw new Error('Error en la respuesta del servidor');
-      }
+      setNotification({
+        show: true,
+        message: response.status === 200 || response.status === 201 ? '¡Reserva confirmada con éxito!' : 'Error en el servidor.',
+        type: response.status === 200 || response.status === 201 ? 'success' : 'error'
+      });
     } catch (error) {
-      console.error('Error al confirmar la reserva:', error);
       setNotification({ show: true, message: 'Error al confirmar la reserva. Intente nuevamente.', type: 'error' });
     } finally {
       setIsLoading(false);
@@ -139,31 +197,44 @@ const ReservaTurno: React.FC = () => {
         <h2 style={styles.subtitle}>Reserva tu Turno</h2>
         <form onSubmit={handleSubmit} style={styles.form}>
           <div style={styles.formGroup}>
-            <label htmlFor="fecha">Fecha:</label>
-            <input
-              type="date"
-              id="fecha"
-              name="fecha"
-              value={reservation.fecha}
-              onChange={handleInputChange}
-              required
-              style={styles.input}
-            />
+            <label htmlFor="fecha" style={styles.label}>Fecha:</label>
+            <div style={styles.inputWrapper}>
+              
+              <input
+                type="date"
+                id="fecha"
+                name="fecha"
+                value={reservation.fecha}
+                onChange={handleInputChange}
+                min={new Date().toISOString().split('T')[0]}
+                required
+                style={styles.input}
+              />
+            </div>
           </div>
           <div style={styles.formGroup}>
-            <label htmlFor="hora">Hora:</label>
-            <input
-              type="time"
-              id="hora"
-              name="hora"
-              value={reservation.hora}
-              onChange={handleInputChange}
-              required
-              style={styles.input}
-            />
+            <label htmlFor="hora" style={styles.label}>Hora:</label>
+            <div style={styles.inputWrapper}>
+              
+              <select
+                id="hora"
+                name="hora"
+                value={reservation.hora}
+                onChange={handleInputChange}
+                required
+                style={styles.input}
+              >
+                <option value="">Seleccione una hora</option>
+                {availableHours.map((hour) => (
+                  <option key={hour} value={hour}>
+                    {hour}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
           <div style={styles.formGroup}>
-            <label htmlFor="barbero">Barbero:</label>
+            <label htmlFor="barbero" style={styles.label}>Barbero:</label>
             <input
               type="text"
               id="barbero"
@@ -173,7 +244,7 @@ const ReservaTurno: React.FC = () => {
             />
           </div>
           <div style={styles.formGroup}>
-            <label htmlFor="corte">Corte seleccionado:</label>
+            <label htmlFor="corte" style={styles.label}>Corte seleccionado:</label>
             <input
               type="text"
               id="corte"
@@ -195,7 +266,7 @@ const ReservaTurno: React.FC = () => {
                 {serviciosAdicionales.map((service) => (
                   <div 
                     key={service} 
-                    onClick={() => handleServiceToggle(service)}
+                    onClick={() => toggleService(service)}
                     style={styles.serviceItem}
                   >
                     <span>{service}</span>
@@ -207,11 +278,6 @@ const ReservaTurno: React.FC = () => {
           </div>
           <button type="submit" style={styles.button}>Reservar Turno</button>
         </form>
-
-        <button onClick={() => navigate('/Mis-Turnos')} style={styles.viewAppointmentsButton}>
-          <Calendar size={20} />
-          Ver Mis Turnos
-        </button>
       </div>
 
       {showSummary && (
@@ -250,7 +316,6 @@ const ReservaTurno: React.FC = () => {
     </div>
   );
 };
-
 
 const styles = {
   container: {
@@ -305,33 +370,62 @@ const styles = {
   formGroup: {
     marginBottom: '15px',
   },
+  label: {
+    display: 'block',
+    marginBottom: '5px',
+    fontSize: '0.9em',
+    color: '#ddd',
+  },
+  inputWrapper: {
+    position: 'relative' as const,
+  },
+  inputIcon: {
+   
+  },
   input: {
     width: '100%',
-    padding: '10px',
+    padding: '10px 10px 10px 7px',
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    border: 'none',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
     borderRadius: '5px',
-    color: 'white',
+    color: 'black',
+    fontSize: '14px',
   },
   button: {
     width: '100%',
     padding: '10px',
     backgroundColor: '#4CAF50',
-    color: 'white',
+    
+    color: 'black',
     border: 'none',
     borderRadius: '5px',
     cursor: 'pointer',
+    fontSize: '16px',
+    transition: 'background-color 0.3s',
   },
-  viewAppointmentsButton: {
+  servicesToggle: {
     display: 'flex',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    gap: '5px',
-    marginTop: '20px',
-    padding: '10px 15px',
-    backgroundColor: '#3498db',
-    color: 'white',
+    width: '100%',
+    padding: '10px',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     border: 'none',
     borderRadius: '5px',
+    color: 'black',
+    cursor: 'pointer',
+  },
+  servicesList: {
+    marginTop: '10px',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: '5px',
+    padding: '10px',
+  },
+  serviceItem: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '5px 0',
     cursor: 'pointer',
   },
   modal: {
@@ -386,31 +480,6 @@ const styles = {
     color: 'white',
     border: 'none',
     borderRadius: '5px',
-    cursor: 'pointer',
-  },
-  servicesToggle: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '100%',
-    padding: '10px',
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    border: 'none',
-    borderRadius: '5px',
-    color: 'white',
-    cursor: 'pointer',
-  },
-  servicesList: {
-    marginTop: '10px',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: '5px',
-    padding: '10px',
-  },
-  serviceItem: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '5px 0',
     cursor: 'pointer',
   },
   successNotification: {
