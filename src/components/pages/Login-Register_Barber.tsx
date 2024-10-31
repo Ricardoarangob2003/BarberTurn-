@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
 import { api } from '../../axiosConfig';
 
 const LoginRegister: React.FC = () => {
@@ -9,11 +10,36 @@ const LoginRegister: React.FC = () => {
 
   const [correo, setCorreo] = useState('');
   const [contrasena, setContrasena] = useState('');
+  const [confirmarContrasena, setConfirmarContrasena] = useState('');
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
   const [local, setLocal] = useState('');
   const [direccion, setDireccion] = useState('');
   const [telefono, setTelefono] = useState('');
+  const [mostrarContrasena, setMostrarContrasena] = useState(false);
+  const [mostrarConfirmarContrasena, setMostrarConfirmarContrasena] = useState(false);
+  const [errorContrasena, setErrorContrasena] = useState('');
+  const [mensajeExito, setMensajeExito] = useState('');
+
+  const validarContrasena = (password: string) => {
+    const tieneMinuscula = /[a-z]/.test(password);
+    const tieneMayuscula = /[A-Z]/.test(password);
+    const tieneNumero = /\d/.test(password);
+    const tieneEspecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+    const tieneOchoCaracteres = password.length >= 8;
+
+    const errores = [];
+    if (!tieneMinuscula) errores.push("una letra minúscula");
+    if (!tieneMayuscula) errores.push("una letra mayúscula");
+    if (!tieneNumero) errores.push("un número");
+    if (!tieneEspecial) errores.push("un carácter especial (@$!%*?)");
+    if (!tieneOchoCaracteres) errores.push("al menos 8 caracteres");
+
+    return {
+      esValida: tieneMinuscula && tieneMayuscula && tieneNumero && tieneEspecial && tieneOchoCaracteres,
+      errores
+    };
+  };
 
   const manejarLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,18 +58,29 @@ const LoginRegister: React.FC = () => {
           local: adminEncontrado.local,
         }));
         
-        navigate('/Dashboard-Barberia');
+        setMensajeExito('Inicio de sesión exitoso. Redirigiendo...');
+        setTimeout(() => navigate('/Dashboard-Barberia'), 2000);
       } else {
-        alert('Credenciales incorrectas. Por favor, intenta de nuevo.');
+        setErrorContrasena('Credenciales incorrectas. Por favor, intenta de nuevo.');
       }
     } catch (error) {
       console.error('Error en el login:', error);
-      alert('Error en el servidor. Por favor, intenta más tarde.');
+      setErrorContrasena('Error en el servidor. Por favor, intenta más tarde.');
     }
   };
 
   const manejarRegistroPaso1 = (e: React.FormEvent) => {
     e.preventDefault();
+    const validacion = validarContrasena(contrasena);
+    if (!validacion.esValida) {
+      setErrorContrasena(`La contraseña debe incluir ${validacion.errores.join(', ')}.`);
+      return;
+    }
+    if (contrasena !== confirmarContrasena) {
+      setErrorContrasena('Las contraseñas no coinciden.');
+      return;
+    }
+    setErrorContrasena('');
     setPaso(2);
   };
 
@@ -69,16 +106,20 @@ const LoginRegister: React.FC = () => {
           local
         });
 
-        alert('Registro exitoso. Por favor, inicia sesión.');
-        setEsLogin(true);
-        setCorreo('');
-        setContrasena('');
+        setMensajeExito('Registro exitoso. Redirigiendo al inicio de sesión...');
+        setTimeout(() => {
+          setEsLogin(true);
+          setCorreo('');
+          setContrasena('');
+          setConfirmarContrasena('');
+          setMensajeExito('');
+        }, 3000);
       } else {
-        alert('Error en el registro. Por favor, intenta de nuevo.');
+        setErrorContrasena('Error en el registro. Por favor, intenta de nuevo.');
       }
     } catch (error) {
       console.error('Error en el registro:', error);
-      alert('Registro fallido. Por favor, intenta de nuevo.');
+      setErrorContrasena('Registro fallido. Por favor, intenta de nuevo.');
     }
   };
 
@@ -101,6 +142,8 @@ const LoginRegister: React.FC = () => {
           </button>
         </div>
 
+        {mensajeExito && <p style={styles.successText}>{mensajeExito}</p>}
+
         {esLogin ? (
           <form onSubmit={manejarLogin} style={styles.form}>
             <input
@@ -111,14 +154,24 @@ const LoginRegister: React.FC = () => {
               style={styles.input}
               required
             />
-            <input
-              type="password"
-              placeholder="Contraseña"
-              value={contrasena}
-              onChange={(e) => setContrasena(e.target.value)}
-              style={styles.input}
-              required
-            />
+            <div style={styles.passwordContainer}>
+              <input
+                type={mostrarContrasena ? "text" : "password"}
+                placeholder="Contraseña"
+                value={contrasena}
+                onChange={(e) => setContrasena(e.target.value)}
+                style={styles.passwordInput}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setMostrarContrasena(!mostrarContrasena)}
+                style={styles.eyeButton}
+              >
+                {mostrarContrasena ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+            {errorContrasena && <p style={styles.errorText}>{errorContrasena}</p>}
             <button type="submit" style={styles.submitButton}>Iniciar Sesión</button>
           </form>
         ) : (
@@ -156,14 +209,41 @@ const LoginRegister: React.FC = () => {
                 style={styles.input}
                 required
               />
-              <input
-                type="password"
-                placeholder="Contraseña"
-                value={contrasena}
-                onChange={(e) => setContrasena(e.target.value)}
-                style={styles.input}
-                required
-              />
+              <div style={styles.passwordContainer}>
+                <input
+                  type={mostrarContrasena ? "text" : "password"}
+                  placeholder="Contraseña"
+                  value={contrasena}
+                  onChange={(e) => setContrasena(e.target.value)}
+                  style={styles.passwordInput}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setMostrarContrasena(!mostrarContrasena)}
+                  style={styles.eyeButton}
+                >
+                  {mostrarContrasena ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+              <div style={styles.passwordContainer}>
+                <input
+                  type={mostrarConfirmarContrasena ? "text" : "password"}
+                  placeholder="Confirmar Contraseña"
+                  value={confirmarContrasena}
+                  onChange={(e) => setConfirmarContrasena(e.target.value)}
+                  style={styles.passwordInput}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setMostrarConfirmarContrasena(!mostrarConfirmarContrasena)}
+                  style={styles.eyeButton}
+                >
+                  {mostrarConfirmarContrasena ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+              {errorContrasena && <p style={styles.errorText}>{errorContrasena}</p>}
               <button type="submit" style={styles.submitButton}>Siguiente</button>
             </form>
           ) : (
@@ -188,6 +268,11 @@ const LoginRegister: React.FC = () => {
             </form>
           )
         )}
+        
+        {/* Botón de volver añadido aquí */}
+        <Link to="/" style={styles.backButton}>
+          Volver a la página principal
+        </Link>
       </div>
     </div>
   );
@@ -246,6 +331,28 @@ const styles = {
     fontSize: '1rem',
     color: 'white'
   },
+  passwordContainer: {
+    position: 'relative' as const,
+    display: 'flex',
+    alignItems: 'center',
+  },
+  passwordInput: {
+    padding: '0.5rem',
+    background: 'rgba(255,255,255,0.1)',
+    borderRadius: '4px',
+    border: '1px solid #ccc',
+    fontSize: '1rem',
+    color: 'white',
+    width: '100%',
+  },
+  eyeButton: {
+    position: 'absolute' as const,
+    right: '0.5rem',
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    color: 'white',
+  },
   submitButton: {
     padding: '0.5rem',
     backgroundColor: '#4CAF50',
@@ -255,6 +362,27 @@ const styles = {
     cursor: 'pointer',
     fontSize: '1rem',
     transition: 'background-color 0.3s',
+  },
+  errorText: {
+    color: '#ff6b6b',
+    fontSize: '0.8rem',
+    marginTop: '0.5rem',
+  },
+  successText: {
+    color: '#4CAF50',
+    fontSize: '0.9rem',
+    marginBottom: '1rem',
+    textAlign: 'center' as const,
+  },
+  // Nuevo estilo para el botón de volver
+  backButton: {
+    display: 'block',
+    textAlign: 'center' as const,
+    marginTop: '1rem',
+    color: '#fff',
+    textDecoration: 'none',
+    fontSize: '0.9rem',
+    transition: 'color 0.3s',
   },
 };
 

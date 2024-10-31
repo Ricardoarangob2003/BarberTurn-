@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Star, Scissors } from 'lucide-react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { Star, Scissors, ArrowLeft } from 'lucide-react';
 import axiosInstance from '../../axiosConfig';
 
 interface Barber {
@@ -52,6 +52,9 @@ const BarberosDisponibles: React.FC = () => {
 
   return (
     <div style={styles.container}>
+      <Link to="/barberias-disponibles" style={styles.backButton}>
+        <ArrowLeft size={24} color="white" />
+      </Link>
       <div style={styles.content}>
         <h1 style={styles.title}>BarberTurn</h1>
         <h2 style={styles.subtitle}>Barberos de {decodeURIComponent(nombreBarberia || '')}</h2>
@@ -70,8 +73,6 @@ const BarberosDisponibles: React.FC = () => {
                 </div>
                 <div style={styles.barberInfo}>
                   <h3 style={styles.barberName}>{barber.nombre}</h3>
-                  
-              
                 </div>
               </div>
             ))}
@@ -95,6 +96,20 @@ const styles = {
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat',
+    position: 'relative' as const,
+  },
+  backButton: {
+    position: 'absolute' as const,
+    top: '20px',
+    left: '20px',
+    padding: '10px',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: '50%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    cursor: 'pointer',
+    transition: 'background-color 0.3s ease',
   },
   content: {
     width: '90%',
@@ -148,14 +163,6 @@ const styles = {
     fontWeight: 'bold' as const,
     marginBottom: '5px',
     color: 'white',
-  },
-  barberPrice: {
-    fontSize: '1em',
-    color: '#ccc',
-    marginBottom: '5px',
-  },
-  stars: {
-    display: 'flex',
   },
   footer: {
     marginTop: '30px',

@@ -62,9 +62,6 @@ const AdminBarber: React.FC = () => {
         api.get('/turno')
       ]);
 
-      console.log('Datos de barberos:', barbersResponse.data);
-      console.log('Datos de turnos:', turnosResponse.data);
-
       const filteredBarbers = barbersResponse.data.filter(
         (barber: Barber) => barber.local.toLowerCase() === userData.local.toLowerCase()
       );
@@ -87,6 +84,11 @@ const AdminBarber: React.FC = () => {
     navigate('/ticket-turnos');
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    navigate('/iniciar-sesion-barberia'); // Ajusta la ruta según tu estructura de rutas
+  };
+
   const toggleCompletedTurnos = () => {
     setShowCompleted(!showCompleted);
   };
@@ -100,6 +102,10 @@ const AdminBarber: React.FC = () => {
 
   return (
     <div style={styles.container}>
+      <button onClick={handleLogout} style={styles.logoutButton}>
+        Cerrar Sesión
+      </button>
+      
       <div style={styles.panel}>
         <h1 style={styles.title}>Panel de Administración - {userData.local}</h1>
 
@@ -168,6 +174,19 @@ const styles = {
     justifyContent: 'center',
     alignItems: 'center',
     padding: '20px',
+    position: 'relative' as const,
+  },
+  logoutButton: {
+    position: 'absolute' as const,
+    top: '20px',
+    right: '20px',
+    backgroundColor: '#FF4C4C',
+    color: 'white',
+    border: 'none',
+    padding: '10px 20px',
+    fontSize: '14px',
+    cursor: 'pointer',
+    borderRadius: '4px',
   },
   panel: {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
@@ -177,7 +196,7 @@ const styles = {
     width: '100%',
     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
   },
-  title:  {
+  title: {
     fontSize: '24px',
     fontWeight: 'bold' as const,
     marginBottom: '20px',
