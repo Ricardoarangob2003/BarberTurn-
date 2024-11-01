@@ -105,7 +105,7 @@ const ReservaTurno: React.FC = () => {
 
     const isToday = selectedDateObj.getTime() === today.getTime();
     const currentHour = isToday ? new Date().getHours() : 9;
-    const slots = generateTimeSlots(Math.max(9, currentHour), 21, 15);
+    const slots = generateTimeSlots(Math.max(9, currentHour), 21, 60);
 
     setAvailableHours(isToday ? filterCurrentDaySlots(slots) : slots);
   };
@@ -165,18 +165,34 @@ const validateDate = (selectedDate: string) => {
   const confirmReservation = async () => {
     setIsLoading(true);
     try {
-      const response = await axiosInstance.post('http://localhost:8090/api/turno/post', reservation);
-      setNotification({
-        show: true,
-        message: response.status === 200 || response.status === 201 ? '¡Reserva confirmada con éxito!' : 'Error en el servidor.',
-        type: response.status === 200 || response.status === 201 ? 'success' : 'error'
-      });
+      console.log('Datos enviados:', reservation);
+  
+      const response = await axiosInstance.post('/turno/post', reservation);
+      if (response.status === 200 || response.status === 201) {
+        setNotification({ show: true, message: '¡Reserva confirmada con éxito!', type: 'success' });
+      } else {
+        throw new Error('Error en la respuesta del servidor');
+      }
     } catch (error) {
-      setNotification({ show: true, message: 'Error al confirmar la reserva. Intente nuevamente.', type: 'error' });
-    } finally {
+      if (error.response && error.response.status === 409) {
+          // Maneja específicamente el conflicto de turno duplicado
+          setNotification({ 
+              show: true, 
+              message: 'Este turno ya está reservado para esta fecha y hora con este barbero.',
+              type: 'error' 
+          });
+      } else {
+          console.error('Error al confirmar la reserva:', error);
+          setNotification({ 
+              show: true, 
+              message: 'Error al confirmar la reserva. Intente nuevamente.', 
+              type: 'error' 
+          });
+      }
+  } finally {
       setIsLoading(false);
-    }
-  };
+  }
+};
 
   const handleLogout = () => {
     localStorage.removeItem('user');
