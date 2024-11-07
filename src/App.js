@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Premium from './components/pages/Premium.tsx';
 import Login from './components/pages/Login.tsx';
 import Galeria from './components/pages/Galeria.tsx';
-import RecuperarContraseña from'./components/pages/RecuperarContraseña.jsx'
+import RecuperarContraseña from'./components/pages/RecuperarContraseña.tsx'
 import Index from './components/pages/index.tsx';
 import Registro from './components/pages/Registro.tsx';
 import BarberiasDisponibles from './components/pages/BarberiasDisponibles.tsx';
@@ -21,7 +21,9 @@ import Turnero from './components/pages/turnero.tsx';
 import TicketTurn from './components/pages/Ticket-turnos.tsx'
 import AdminBarber from './components/pages/Admin-Barber.tsx'
 import LoginRegister from './components/pages/Login-Register_Barber.tsx'
+import PerfilUsuario from './components/pages/Perfil-Usuario.tsx'
 import './App.css';
+import PerfilBarbero from './components/pages/Perfil-Barbero.tsx';
 
 function App() {
   return (
@@ -32,7 +34,7 @@ function App() {
           <Route path="/premium" element={<Premium />} />
           <Route path="/iniciar-sesion" element={<Login />} />
           <Route path="/galeria" element={<Galeria />} />
-          <Route path="RecuperarContraseña" element={<RecuperarContraseña />} />
+          <Route path="/Recuperar-Contraseña" element={<RecuperarContraseña />} />
           <Route path="/Registro" element={<Registro />} />
           <Route path="/Barberias-Disponibles" element={<BarberiasDisponibles />} />
           <Route path="/Barberos-Disponibles/:nombreBarberia" element={<BarberosUrbanBarber />} />
@@ -49,6 +51,9 @@ function App() {
           <Route path='/Ticket-Turnos' element={<TicketTurn />} />
           <Route path='/Dashboard-Barberia' element={<AdminBarber />} />
           <Route path='/Iniciar-sesion-Barberia' element={<LoginRegister />} />
+          <Route path='/Mi-Perfil' element={<PerfilUsuario />} />
+          <Route path='/Mi-Perfil-barbero' element={<PerfilBarbero />} />
+
         </Routes>
       </div>
     </Router>

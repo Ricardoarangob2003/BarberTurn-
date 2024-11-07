@@ -35,7 +35,7 @@ export default function Login() {
 
     try {
       // Intentar iniciar sesión como barbero
-      const barberoResponse = await api.get('http://localhost:8090/api/user/barbero');
+      const barberoResponse = await api.get('/user/barbero');
       console.log('Respuesta completa de barbero:', barberoResponse); // Verificar respuesta completa
       console.log('Datos de barbero:', barberoResponse.data); // Verificar datos específicos
       let user = barberoResponse.data.find(
@@ -45,7 +45,7 @@ export default function Login() {
 
       // Si no se encuentra como barbero, intentar como cliente
       if (!user) {
-        const clienteResponse = await api.get('http://localhost:8090/api/user/cliente');
+        const clienteResponse = await api.get('/user/cliente');
         console.log('Respuesta completa de cliente:', clienteResponse); // Verificar respuesta completa
         console.log('Datos de cliente:', clienteResponse.data); // Verificar datos específicos
         user = clienteResponse.data.find(
@@ -58,11 +58,11 @@ export default function Login() {
         // Obtener los datos personales del usuario según el rol
         let userData: UserData | undefined;
         if (rol === 'barbero') {
-          const response = await api.get('http://localhost:8090/api/barberos');
+          const response = await api.get('/barberos');
           console.log('Datos de barbero en tabla barberos:', response.data); // Verificar datos específicos
           userData = response.data.find((data: UserData) => data.id === user.id);
         } else {
-          const response = await api.get('http://localhost:8090/api/cliente');
+          const response = await api.get('/cliente');
           console.log('Datos de cliente en tabla clientes:', response.data); // Verificar datos específicos
           userData = response.data.find((data: UserData) => data.id === user.id);
         }

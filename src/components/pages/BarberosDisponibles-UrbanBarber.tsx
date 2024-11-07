@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Star, Scissors, ArrowLeft } from 'lucide-react';
+import { Star, Scissors, ArrowLeft, Menu, User, Calendar } from 'lucide-react';
 import axiosInstance from '../../axiosConfig';
 
 interface Barber {
@@ -14,6 +14,7 @@ const BarberosDisponibles: React.FC = () => {
   const [barbers, setBarbers] = useState<Barber[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { nombreBarberia } = useParams<{ nombreBarberia: string }>();
   const navigate = useNavigate();
 
@@ -42,6 +43,15 @@ const BarberosDisponibles: React.FC = () => {
     navigate('/Galeria-Seleccionable');
   };
 
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const navigateTo = (path: string) => {
+    navigate(path);
+    setIsMenuOpen(false);
+  };
+
   if (loading) {
     return <div style={styles.loading}>Cargando barberos...</div>;
   }
@@ -55,6 +65,21 @@ const BarberosDisponibles: React.FC = () => {
       <Link to="/barberias-disponibles" style={styles.backButton}>
         <ArrowLeft size={24} color="white" />
       </Link>
+      <button onClick={toggleMenu} style={styles.menuButton}>
+        <Menu size={24} color="white" />
+      </button>
+      {isMenuOpen && (
+        <div style={styles.menuDropdown}>
+          <button onClick={() => navigateTo('/mi-perfil')} style={styles.menuItem}>
+            <User size={18} />
+            <span>Mi Perfil</span>
+          </button>
+          <button onClick={() => navigateTo('/mis-turnos')} style={styles.menuItem}>
+            <Calendar size={18} />
+            <span>Mis Turnos</span>
+          </button>
+        </div>
+      )}
       <div style={styles.content}>
         <h1 style={styles.title}>BarberTurn</h1>
         <h2 style={styles.subtitle}>Barberos de {decodeURIComponent(nombreBarberia || '')}</h2>
@@ -109,6 +134,42 @@ const styles = {
     justifyContent: 'center',
     alignItems: 'center',
     cursor: 'pointer',
+    transition: 'background-color 0.3s ease',
+  },
+  menuButton: {
+    position: 'absolute' as const,
+    top: '20px',
+    right: '20px',
+    padding: '10px',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: '50%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    cursor: 'pointer',
+    transition: 'background-color 0.3s ease',
+    border: 'none',
+  },
+  menuDropdown: {
+    position: 'absolute' as const,
+    top: '70px',
+    right: '20px',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    borderRadius: '5px',
+    padding: '10px',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '10px',
+  },
+  menuItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    color: 'white',
+    backgroundColor: 'transparent',
+    border: 'none',
+    cursor: 'pointer',
+    padding: '5px',
     transition: 'background-color 0.3s ease',
   },
   content: {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Star } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Star, Menu, User, Calendar } from 'lucide-react';
 import axiosInstance from '../../axiosConfig';
 
 interface Barbershop {
@@ -15,6 +15,8 @@ const BarberiasDisponibles: React.FC = () => {
   const [barbershops, setBarbershops] = useState<Barbershop[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchBarbershops = async () => {
@@ -35,6 +37,15 @@ const BarberiasDisponibles: React.FC = () => {
   const handleBarbershopSelect = (id: string, name: string) => {
     localStorage.setItem('selectedLocal', name);
     localStorage.setItem('selectedLocalId', id);
+  };
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const navigateTo = (path: string) => {
+    navigate(path);
+    setIsMenuOpen(false);
   };
 
   if (isLoading) {
@@ -62,7 +73,24 @@ const BarberiasDisponibles: React.FC = () => {
   return (
     <div style={styles.container}>
       <div style={styles.content}>
-        <h1 style={styles.title}>BarberTurn</h1>
+        <div style={styles.header}>
+          <h1 style={styles.title}>BarberTurn</h1>
+          <button onClick={toggleMenu} style={styles.menuButton}>
+            <Menu size={24} />
+          </button>
+          {isMenuOpen && (
+            <div style={styles.menuDropdown}>
+              <button onClick={() => navigateTo('/mi-perfil')} style={styles.menuItem}>
+                <User size={18} />
+                <span>Mi Perfil</span>
+              </button>
+              <button onClick={() => navigateTo('/mis-turnos')} style={styles.menuItem}>
+                <Calendar size={18} />
+                <span>Mis Turnos</span>
+              </button>
+            </div>
+          )}
+        </div>
         <h2 style={styles.subtitle}>Barberías Disponibles</h2>
         <div style={styles.barberList}>
           {barbershops.map((shop) => (
@@ -105,7 +133,6 @@ const BarberiasDisponibles: React.FC = () => {
   );
 };
 
-
 const styles = {
   container: {
     minHeight: '100vh',
@@ -123,12 +150,47 @@ const styles = {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     borderRadius: '10px',
     boxShadow: '0 0 10px rgba(0,0,0,0.1)',
+    position: 'relative' as const,
+  },
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '20px',
   },
   title: {
     fontSize: '2.5em',
-    textAlign: 'center' as const,
-    marginBottom: '10px',
     color: '#333',
+    margin: 0,
+  },
+  menuButton: {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    padding: '5px',
+  },
+  menuDropdown: {
+    position: 'absolute' as const,
+    top: '60px',
+    right: '20px',
+    backgroundColor: 'white',
+    borderRadius: '5px',
+    boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+    zIndex: 1000,
+  },
+  menuItem: {
+    display: 'flex',
+    alignItems: 'center',
+    padding: '10px 15px',
+    border: 'none',
+    background: 'none',
+    width: '100%',
+    textAlign: 'left' as const,
+    cursor: 'pointer',
+    transition: 'background-color 0.2s',
+    ':hover': {
+      backgroundColor: '#f0f0f0',
+    },
   },
   subtitle: {
     fontSize: '1.5em',
