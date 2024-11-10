@@ -52,7 +52,7 @@ function App() {
           <Route path='/Dashboard-Barberia' element={<AdminBarber />} />
           <Route path='/Iniciar-sesion-Barberia' element={<LoginRegister />} />
           <Route path='/Mi-Perfil' element={<PerfilUsuario />} />
-          <Route path='/Mi-Perfil-barbero' element={<PerfilBarbero />} />
+          <Route path='/Perfil-barbero' element={<PerfilBarbero />} />
 
         </Routes>
       </div>

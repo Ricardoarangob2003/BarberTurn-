@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, createContext, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Calendar, Scissors, Check, X, AlertTriangle } from 'lucide-react';
+import { LogOut, Calendar, Scissors, Check, X, AlertTriangle, Menu, User } from 'lucide-react';
 import axiosInstance from '../../axiosConfig';
 
 interface User {
@@ -8,6 +8,7 @@ interface User {
   email: string;
   nombre: string;
   apellido: string;
+  rol: string;
 }
 
 interface Turno {
@@ -22,28 +23,68 @@ interface Turno {
   emailCliente: string;
 }
 
-const BarberDashboard: React.FC = () => {
-  const [allTurnos, setAllTurnos] = useState<Turno[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [user, setUser] = useState<User | null>(null);
-  const [activeTab, setActiveTab] = useState<'pendientes' | 'completados' | 'cancelados'>('pendientes');
+const AuthContext = createContext<{
+  user: User | null;
+  setUser: (user: User | null) => void;
+  logout: () => void;
+} | null>(null);
+
+const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
+
+const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(() => {
+    const storedUser = localStorage.getItem('user');
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
-    const userData = localStorage.getItem('user');
-    if (!userData) {
+    if (user) {
+      localStorage.setItem('user', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('user');
+    }
+  }, [user]);
+
+  const logout = () => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    setUser(null);
+    navigate('/iniciar-sesion');
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, setUser, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+const BarberDashboard: React.FC = () => {
+  const { user, logout } = useAuth();
+  const [allTurnos, setAllTurnos] = useState<Turno[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState<'pendientes' | 'completados' | 'cancelados'>('pendientes');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!user) {
       navigate('/iniciar-sesion');
       return;
     }
 
-    const parsedUser = JSON.parse(userData);
-    setUser(parsedUser);
-
     const fetchTurnos = async () => {
       try {
         const response = await axiosInstance.get("http://localhost:8090/api/turno");
-        console.log("Respuesta de la API:", response.data); // Log de la respuesta completa
+        console.log("Respuesta de la API:", response.data);
 
         const fetchedTurnos = response.data;
 
@@ -54,16 +95,15 @@ const BarberDashboard: React.FC = () => {
           return;
         }
 
-        // Filtrar los turnos para mostrar solo los del barbero que ha iniciado sesión
         const barberTurnos = fetchedTurnos.filter((turno: Turno) => {
           if (!turno || typeof turno !== 'object') {
             console.warn("Turno inválido encontrado:", turno);
             return false;
           }
-          return turno.emailBarbero === parsedUser.email;
+          return turno.emailBarbero === user.email;
         });
 
-        console.log("Turnos filtrados del barbero:", barberTurnos); // Log de los turnos filtrados
+        console.log("Turnos filtrados del barbero:", barberTurnos);
 
         setAllTurnos(barberTurnos);
         setLoading(false);
@@ -75,16 +115,10 @@ const BarberDashboard: React.FC = () => {
     };
 
     fetchTurnos();
-  }, [navigate]);
+  }, [user, navigate]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    navigate('/iniciar-sesion');
-  };
   const handleUpdateTurnoStatus = async (id: string, newStatus: string) => {
     try {
-      // Encuentra el turno actual que se va a actualizar
       const turnoToUpdate = allTurnos.find(turno => turno.id === id);
       
       if (!turnoToUpdate) {
@@ -92,13 +126,10 @@ const BarberDashboard: React.FC = () => {
         return;
       }
   
-      // Crea un nuevo objeto con todos los datos del turno y actualiza solo el estado
       const updatedTurno = { ...turnoToUpdate, estado: newStatus };
   
-      // Realiza la solicitud PUT enviando todo el turno actualizado
       await axiosInstance.put(`http://localhost:8090/api/turno/${id}`, updatedTurno);
   
-      // Actualiza el estado local con el nuevo estado
       setAllTurnos(allTurnos.map(turno => 
         turno.id === id ? { ...turno, estado: newStatus } : turno
       ));
@@ -107,13 +138,21 @@ const BarberDashboard: React.FC = () => {
       setError(`Error al actualizar el turno a ${newStatus}. Por favor, intente nuevamente.`);
     }
   };
-  
+
   const filteredTurnos = allTurnos.filter(turno => {
     if (activeTab === 'pendientes') return turno.estado.toLowerCase() === 'pendiente';
     if (activeTab === 'completados') return turno.estado.toLowerCase() === 'completado';
     if (activeTab === 'cancelados') return turno.estado.toLowerCase() === 'cancelado';
     return false;
   });
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const navigateToProfile = () => {
+    navigate('/perfil-barbero');
+  };
 
   if (loading) {
     return <div style={styles.loading}>Cargando tus turnos...</div>;
@@ -131,17 +170,32 @@ const BarberDashboard: React.FC = () => {
     );
   }
 
+  if (!user) return null;
+
   return (
     <div style={styles.container}>
       <div style={styles.header}>
         <h1 style={styles.title}>BarberTurn - Dashboard de Barbero</h1>
-        <button onClick={handleLogout} style={styles.logoutButton}>
-          <LogOut size={20} />
-          Cerrar Sesión
-        </button>
+        <div style={styles.headerButtons}>
+          <button onClick={toggleMenu} style={styles.menuButton}>
+            <Menu size={20} />
+          </button>
+          {isMenuOpen && (
+            <div style={styles.menuDropdown}>
+              <button onClick={navigateToProfile} style={styles.menuItem}>
+                <User size={20} />
+                Mi Perfil
+              </button>
+              <button onClick={logout} style={styles.menuItem}>
+                <LogOut size={20} />
+                Cerrar Sesión
+              </button>
+            </div>
+          )}
+        </div>
       </div>
       <div style={styles.content}>
-        {user && <p style={styles.welcomeMessage}>Bienvenido, {user.nombre} {user.apellido}</p>}
+        <p style={styles.welcomeMessage}>Bienvenido, {user.nombre} {user.apellido}</p>
         
         <div style={styles.tabContainer}>
           <button 
@@ -234,16 +288,40 @@ const styles = {
     fontSize: '2em',
     margin: 0,
   },
-  logoutButton: {
+  headerButtons: {
+    position: 'relative' as const,
+  },
+  menuButton: {
     display: 'flex',
     alignItems: 'center',
     gap: '5px',
     padding: '10px 15px',
-    backgroundColor: '#ff4d4d',
+    backgroundColor: 'transparent',
     color: 'white',
     border: 'none',
     borderRadius: '5px',
     cursor: 'pointer',
+  },
+  menuDropdown: {
+    position: 'absolute' as const,
+    top: '100%',
+    right: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    borderRadius: '5px',
+    padding: '10px',
+    zIndex: 1000,
+  },
+  menuItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    padding: '10px',
+    color: 'white',
+    backgroundColor: 'transparent',
+    border: 'none',
+    cursor: 'pointer',
+    width: '100%',
+    textAlign: 'left' as const,
   },
   content: {
     flex: 1,
@@ -365,4 +443,10 @@ const styles = {
   },
 };
 
-export default BarberDashboard;
+export default function BarberDashboardWithAuth() {
+  return (
+    <AuthProvider>
+      <BarberDashboard />
+    </AuthProvider>
+  );
+}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../../axiosConfig';
 
@@ -11,11 +11,6 @@ interface FormData {
   rol: 'barbero' | 'cliente' | '';
 }
 
-interface User {
-  id: string;
-  email: string;
-}
-
 export default function Registro() {
   const [formData, setFormData] = useState<FormData>({
     nombre: '',
@@ -26,27 +21,7 @@ export default function Registro() {
     rol: '',
   });
   const [error, setError] = useState('');
-  const [clientes, setClientes] = useState<User[]>([]);
-  const [barberos, setBarberos] = useState<User[]>([]);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const [clientesResponse, barberosResponse] = await Promise.all([
-          api.get('/cliente'),
-          api.get('/barberos')
-        ]);
-        setClientes(clientesResponse.data);
-        setBarberos(barberosResponse.data);
-      } catch (error) {
-        console.error('Error fetching users:', error);
-        setError('Error al cargar datos. Por favor, intente más tarde.');
-      }
-    };
-
-    fetchUsers();
-  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -63,21 +38,11 @@ export default function Registro() {
     }));
   };
 
-  const checkEmailExists = (email: string): boolean => {
-    return clientes.some(cliente => cliente.email === email) ||
-           barberos.some(barbero => barbero.email === email);
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.rol) {
       setError('Por favor, seleccione un tipo de registro');
-      return;
-    }
-
-    if (checkEmailExists(formData.email)) {
-      setError('Este correo electrónico ya está registrado');
       return;
     }
 
@@ -88,7 +53,7 @@ export default function Registro() {
         apellido: formData.apellido,
         telefono: formData.telefono,
         email: formData.email,
-        rol: formData.rol,
+        rol: formData.rol, // Añadimos el rol a los datos que se envían
         ...(formData.rol === 'barbero' && { local: formData.local }),
       };
 
@@ -98,15 +63,20 @@ export default function Registro() {
         response = await api.post('/cliente/post', dataToSend);
       }
 
+      // Asumiendo que el ID se devuelve en la respuesta como 'id'
       const userId = response.data.id;
 
+      // Guardar el rol y el ID en localStorage
       localStorage.setItem('userId', userId);
       localStorage.setItem('rol', formData.rol);
+
+      // Guardar toda la información del formulario en localStorage
       localStorage.setItem('registroTemporal', JSON.stringify({
         ...formData,
         id: userId,
       }));
 
+      // Redirigir a la siguiente vista
       navigate('/Registro-Credenciales');
     } catch (err) {
       console.error('Error al guardar los datos:', err);

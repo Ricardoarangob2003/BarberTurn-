@@ -21,11 +21,6 @@ interface PasswordStrength {
   hasSymbol: boolean;
 }
 
-interface Notification {
-  message: string;
-  type: 'error' | 'success' | 'warning';
-}
-
 export default function RegistroCredenciales() {
   const [registroData, setRegistroData] = useState<RegistroData | null>(null);
   const [username, setUsername] = useState('');
@@ -40,7 +35,7 @@ export default function RegistroCredenciales() {
     hasNumber: false,
     hasSymbol: false,
   });
-  const [notification, setNotification] = useState<Notification | null>(null);
+  const [notification, setNotification] = useState({ message: '', type: '' });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -54,27 +49,28 @@ export default function RegistroCredenciales() {
         setRegistroData(parsedData);
       } catch (error) {
         console.error('Error al parsear los datos del registro:', error);
-        showNotification('Error al recuperar los datos del registro. Por favor, vuelve al paso anterior.', 'error');
+        setNotification({
+          message: 'Error al recuperar los datos del registro. Por favor, vuelve al paso anterior.',
+          type: 'error'
+        });
         setTimeout(() => navigate('/registro'), 3000);
       }
     } else {
-      showNotification('No se encontraron datos del registro. Redirigiendo al inicio del registro.', 'error');
+      setNotification({
+        message: 'No se encontraron datos del registro. Redirigiendo al inicio del registro.',
+        type: 'error'
+      });
       setTimeout(() => navigate('/registro'), 3000);
     }
   }, [navigate]);
   
   useEffect(() => {
-    if (notification) {
-      const timer = setTimeout(() => {
-        setNotification(null);
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [notification]);
+    const timer = setTimeout(() => {
+      setNotification({ message: '', type: '' });
+    }, 5000);
 
-  const showNotification = (message: string, type: 'error' | 'success' | 'warning') => {
-    setNotification({ message, type });
-  };
+    return () => clearTimeout(timer);
+  }, [notification]);
 
   const checkPasswordStrength = (password: string) => {
     setPasswordStrength({
@@ -93,61 +89,38 @@ export default function RegistroCredenciales() {
   };
 
   const validatePassword = () => {
-    const invalidCriteria = Object.entries(passwordStrength)
-      .filter(([_, isValid]) => !isValid)
-      .map(([key]) => key);
-
-    if (invalidCriteria.length > 0) {
-      const criteriaMessages = {
-        hasMinLength: 'al menos 8 caracteres',
-        hasUppercase: 'una letra mayúscula',
-        hasLowercase: 'una letra minúscula',
-        hasNumber: 'un número',
-        hasSymbol: 'un símbolo especial',
-      };
-      const missingCriteria = invalidCriteria.map(criteria => criteriaMessages[criteria as keyof typeof criteriaMessages]);
-      showNotification(`La contraseña debe tener: ${missingCriteria.join(', ')}.`, 'error');
-      return false;
-    }
-    return true;
-  };
-
-  const validateUsername = async () => {
-    try {
-      const response = await api.post('/user/check-username', { username });
-      return response.data.exists;
-    } catch (err) {
-      console.error('Error al verificar el nombre de usuario:', err);
-      showNotification('Error al verificar el nombre de usuario. Por favor, inténtalo de nuevo.', 'error');
-      return false;
-    }
+    return Object.values(passwordStrength).every(Boolean);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validatePassword()) {
+      setNotification({
+        message: '¡Ups! Tu contraseña no cumple con todos los requisitos de seguridad. Por favor, revisa los criterios y ajústala.',
+        type: 'error'
+      });
       return;
     }
 
     if (password !== confirmPassword) {
-      showNotification('Las contraseñas no coinciden. Por favor, verifica que sean iguales.', 'error');
+      setNotification({
+        message: '¡Vaya! Las contraseñas no coinciden. ¿Podrías verificarlas de nuevo?',
+        type: 'error'
+      });
       return;
     }
 
     if (!registroData || !registroData.id || !registroData.rol) {
-      showNotification('Datos de registro incompletos. Por favor, vuelve al paso anterior.', 'error');
-      return;
-    }
-
-    const usernameExists = await validateUsername();
-    if (usernameExists) {
-      showNotification('Este nombre de usuario ya está en uso. Por favor, elige otro.', 'error');
+      setNotification({
+        message: 'Lo siento, no se encontraron los datos de registro completos. Por favor, vuelve al paso anterior.',
+        type: 'error'
+      });
       return;
     }
 
     try {
-      const endpoint = registroData.rol === 'barbero' ? '/user/barbero/post' : '/user/cliente/post';
+      const endpoint = registroData.rol === 'barbero' ? '/user/barbero/post' : 'user/cliente/post';
       const response = await api.post(endpoint, {
         ...registroData,
         username,
@@ -156,29 +129,18 @@ export default function RegistroCredenciales() {
 
       console.log('Registro exitoso:', response.data);
       localStorage.removeItem('registroTemporal');
-      showNotification('¡Registro completado con éxito! Redirigiendo al inicio de sesión...', 'success');
+      setNotification({
+        message: '¡Genial! Tu registro se ha completado con éxito. Te estamos redirigiendo al inicio de sesión.',
+        type: 'success'
+      });
+
       setTimeout(() => navigate('/iniciar-sesion'), 3000);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error durante el registro:', err);
-      if (err.response) {
-        switch (err.response.status) {
-          case 400:
-            showNotification('Datos de registro inválidos. Por favor, verifica la información proporcionada.', 'error');
-            break;
-          case 409:
-            showNotification('Ya existe una cuenta con este correo electrónico o nombre de usuario.', 'error');
-            break;
-          case 500:
-            showNotification('Error en el servidor. Por favor, inténtalo más tarde.', 'error');
-            break;
-          default:
-            showNotification('Error al procesar el registro. Por favor, inténtalo de nuevo.', 'error');
-        }
-      } else if (err.request) {
-        showNotification('No se pudo conectar con el servidor. Verifica tu conexión a internet.', 'error');
-      } else {
-        showNotification('Error inesperado. Por favor, inténtalo de nuevo.', 'error');
-      }
+      setNotification({
+        message: 'Oh no, ha ocurrido un error durante el registro. ¿Podrías intentarlo de nuevo?',
+        type: 'error'
+      });
     }
   };
 
@@ -191,8 +153,8 @@ export default function RegistroCredenciales() {
       <div style={styles.formContainer}>
         <h1 style={styles.title}>BarberTurn</h1>
         <h2 style={styles.subtitle}>Completar Registro</h2>
-        {notification && (
-          <div style={styles[`${notification.type}Notification`]}>
+        {notification.message && (
+          <div style={notification.type === 'error' ? styles.errorNotification : styles.successNotification}>
             {notification.type === 'error' ? <AlertCircle size={20} /> : <CheckCircle size={20} />}
             <span>{notification.message}</span>
           </div>
@@ -357,15 +319,6 @@ const styles = {
     padding: '10px',
     backgroundColor: 'lightgreen',
     color: 'black',
-    borderRadius: '5px',
-    marginBottom: '20px',
-  },
-  warningNotification: {
-    display: 'flex',
-    alignItems: 'center',
-    padding: '10px',
-    backgroundColor: '#ffa500',
-    color: 'white',
     borderRadius: '5px',
     marginBottom: '20px',
   },
