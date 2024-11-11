@@ -9,6 +9,7 @@ interface User {
   nombre: string;
   apellido: string;
   rol: string;
+  imagen?: string;
 }
 
 interface Turno {
@@ -178,7 +179,11 @@ const BarberDashboard: React.FC = () => {
         <h1 style={styles.title}>BarberTurn - Dashboard de Barbero</h1>
         <div style={styles.headerButtons}>
           <button onClick={toggleMenu} style={styles.menuButton}>
-            <Menu size={20} />
+            {user.imagen ? (
+              <img src={user.imagen} alt="Perfil" style={styles.profileImage} />
+            ) : (
+              <User size={20} />
+            )}
           </button>
           {isMenuOpen && (
             <div style={styles.menuDropdown}>
@@ -266,6 +271,7 @@ const BarberDashboard: React.FC = () => {
     </div>
   );
 };
+
 
 const styles = {
   container: {
@@ -405,6 +411,12 @@ const styles = {
     border: 'none',
     borderRadius: '5px',
     cursor: 'pointer',
+  },
+  profileImage: {
+    width: '30px',
+    height: '30px',
+    borderRadius: '50%',
+    objectFit: 'cover' as const,
   },
   noTurnos: {
     textAlign: 'center' as const,

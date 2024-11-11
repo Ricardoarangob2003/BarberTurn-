@@ -48,6 +48,10 @@ const BarberiasDisponibles: React.FC = () => {
     setIsMenuOpen(false);
   };
 
+  // Obtener la imagen de perfil desde localStorage
+  const userInfo = JSON.parse(localStorage.getItem('user') || '{}');
+  const userImage = userInfo.imagen || ''; // Si no hay imagen, se usará el string vacío
+
   if (isLoading) {
     return (
       <div style={styles.container}>
@@ -102,10 +106,15 @@ const BarberiasDisponibles: React.FC = () => {
             >
               <div style={styles.barberItem}>
                 <div style={styles.profilePicture}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="12" cy="8" r="5" stroke="currentColor" strokeWidth="2"/>
-                    <path d="M20 21C20 16.5817 16.4183 13 12 13C7.58172 13 4 16.5817 4 21" stroke="currentColor" strokeWidth="2"/>
-                  </svg>
+                  {/* Mostrar la imagen de perfil si existe, sino mostrar el placeholder */}
+                  {userImage ? (
+                    <img src={userImage} alt="Profile" style={styles.profileImage} />
+                  ) : (
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="12" cy="8" r="5" stroke="currentColor" strokeWidth="2"/>
+                      <path d="M20 21C20 16.5817 16.4183 13 12 13C7.58172 13 4 16.5817 4 21" stroke="currentColor" strokeWidth="2"/>
+                    </svg>
+                  )}
                 </div>
                 <div style={styles.barberInfo}>
                   <h3 style={styles.barberName}>{shop.local}</h3>
@@ -236,39 +245,44 @@ const styles = {
     alignItems: 'center',
     marginBottom: '10px',
   },
+  profileImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: '50%',
+    objectFit: 'cover' as 'cover', // Aquí aseguramos que sea un valor válido
+  },
   barberInfo: {
     textAlign: 'center' as const,
   },
   barberName: {
     fontSize: '1.2em',
-    fontWeight: 'bold' as const,
-    marginBottom: '5px',
+    fontWeight: 'bold',
     color: '#333',
+    margin: '5px 0',
   },
   barberSlogan: {
     fontSize: '0.9em',
-    color: '#666',
-    marginBottom: '5px',
+    color: '#777',
+    marginBottom: '10px',
   },
   stars: {
     display: 'flex',
     justifyContent: 'center',
   },
   footer: {
-    marginTop: '30px',
     textAlign: 'center' as const,
+    padding: '10px',
     fontSize: '0.9em',
-    color: '#666',
+    color: '#777',
+    marginTop: '20px',
   },
   loadingText: {
-    textAlign: 'center' as const,
     fontSize: '1.2em',
-    color: '#666',
+    color: '#555',
   },
   errorText: {
-    textAlign: 'center' as const,
+    color: 'red',
     fontSize: '1.2em',
-    color: '#ff0000',
   },
 };
 

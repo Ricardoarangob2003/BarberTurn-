@@ -18,6 +18,7 @@ interface UserData {
   email: string;
   telefono: string;
   local?: string;
+  imagen?: string; // Nuevo campo para la imagen de perfil
 }
 
 export default function Login() {
@@ -75,6 +76,7 @@ export default function Login() {
             apellido: userData.apellido,
             email: userData.email,
             telefono: userData.telefono,
+            imagen: userData.imagen,
             ...(rol === 'barbero' && { local: userData.local })
           };
 
