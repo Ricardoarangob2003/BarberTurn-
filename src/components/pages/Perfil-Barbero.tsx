@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Lock, ArrowLeft, Camera } from 'lucide-react';
+import { User, Lock, ArrowLeft, Camera, Eye, EyeOff } from 'lucide-react';
 import axiosInstance from '../../axiosConfig';
 
 interface BarberData {
@@ -30,6 +30,8 @@ const PerfilBarbero: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -74,23 +76,40 @@ const PerfilBarbero: React.FC = () => {
     }
   };
 
-  const handleSubmitCredentials = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmitCredentials = async (type: 'username' | 'password') => {
     setIsLoading(true);
     setError('');
     setSuccess('');
 
     try {
       if (barberData) {
-        if (credentials.newPassword !== credentials.confirmPassword) {
-          throw new Error('Las contraseñas no coinciden');
+        if (type === 'password') {
+          if (credentials.newPassword.length < 8) {
+            setError('La contraseña debe tener al menos 8 caracteres');
+            setIsLoading(false);
+            return;
+          }
+          if (credentials.newPassword !== credentials.confirmPassword) {
+            setError('Las contraseñas no coinciden');
+            setIsLoading(false);
+            return;
+          }
         }
-        await axiosInstance.put(`/user/barbero/${barberData.id}`, credentials);
-        setSuccess('Credenciales actualizadas con éxito');
-        setCredentials(prev => ({ ...prev, newPassword: '', confirmPassword: '' }));
+
+        const updatedCredentials = type === 'username' 
+          ? { username: credentials.username }
+          : { password: credentials.newPassword };
+
+        await axiosInstance.put(`/user/barbero/${barberData.id}`, updatedCredentials);
+        
+        setSuccess(`${type === 'username' ? 'Nombre de usuario' : 'Contraseña'} actualizado con éxito`);
+        
+        if (type === 'password') {
+          setCredentials(prev => ({ ...prev, newPassword: '', confirmPassword: '' }));
+        }
       }
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Error al actualizar las credenciales');
+      setError(error instanceof Error ? error.message : `Error al actualizar ${type === 'username' ? 'el nombre de usuario' : 'la contraseña'}`);
     } finally {
       setIsLoading(false);
     }
@@ -231,51 +250,93 @@ const PerfilBarbero: React.FC = () => {
         )}
 
         {activeTab === 'security' && (
-          <form onSubmit={handleSubmitCredentials} style={styles.form}>
-            <div style={styles.inputGroup}>
-              <label htmlFor="username" style={styles.label}>Nombre de Usuario:</label>
-              <input
-                type="text"
-                id="username"
-                name="username"
-                value={credentials.username}
-                onChange={handleCredentialsChange}
-                style={styles.input}
-                required
-              />
+          <div style={styles.securityContainer}>
+            <div style={styles.securitySection}>
+              <h3 style={styles.sectionTitle}>Nombre de Usuario:</h3>
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                handleSubmitCredentials('username');
+              }} style={styles.form}>
+                <div style={styles.inputGroup}>
+                  <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    value={credentials.username}
+                    onChange={handleCredentialsChange}
+                    style={styles.input}
+                    required
+                  />
+                </div>
+                <button type="submit" style={styles.submitButton} disabled={isLoading}>
+                  {isLoading ? 'Actualizando...' : 'Actualizar Nombre de Usuario'}
+                </button>
+              </form>
             </div>
-            <div style={styles.inputGroup}>
-              <label htmlFor="newPassword" style={styles.label}>Nueva Contraseña:</label>
-              <input
-                type="password"
-                id="newPassword"
-                name="newPassword"
-                value={credentials.newPassword}
-                onChange={handleCredentialsChange}
-                style={styles.input}
-              />
+
+            <div style={styles.securitySection}>
+              <h3 style={styles.sectionTitle}>Cambiar Contraseña</h3>
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                handleSubmitCredentials('password');
+              }} style={styles.form}>
+                <div style={styles.inputGroup}>
+                  <label htmlFor="newPassword" style={styles.label}>Nueva Contraseña:</label>
+                  <div style={styles.passwordInputContainer}>
+                    <input
+                      type={showNewPassword ? "text" : "password"}
+                      id="newPassword"
+                      name="newPassword"
+                      value={credentials.newPassword}
+                      onChange={handleCredentialsChange}
+                      style={styles.passwordInput}
+                      required
+                      minLength={8}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      style={styles.passwordToggle}
+                    >
+                      {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
+                </div>
+                <div style={styles.inputGroup}>
+                  <label htmlFor="confirmPassword" style={styles.label}>Confirmar Nueva Contraseña:</label>
+                  <div style={styles.passwordInputContainer}>
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      value={credentials.confirmPassword}
+                      onChange={handleCredentialsChange}
+                      style={styles.passwordInput}
+                      required
+                      minLength={8}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      style={styles.passwordToggle}
+                    >
+                      {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
+                </div>
+                <button type="submit" style={styles.submitButton} disabled={isLoading}>
+                  {isLoading ? 'Actualizando...' : 'Cambiar Contraseña'}
+                </button>
+              </form>
             </div>
-            <div style={styles.inputGroup}>
-              <label htmlFor="confirmPassword" style={styles.label}>Confirmar Contraseña:</label>
-              <input
-                type="password"
-                id="confirmPassword"
-                name="confirmPassword"
-                value={credentials.confirmPassword}
-                onChange={handleCredentialsChange}
-                style={styles.input}
-              />
-            </div>
-            <button type="submit" style={styles.submitButton} disabled={isLoading}>
-              {isLoading ? 'Actualizando...' : 'Actualizar Credenciales'}
-            </button>
-          </form>
+          </div>
         )}
       </div>
     </div>
   );
 };
 
+  
 
 const styles = {
   wrapper: {
@@ -415,6 +476,47 @@ const styles = {
     color: '#ff4d4d',
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
   },
+  securityContainer: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '2rem',
+  },
+  securitySection: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    padding: '20px',
+    borderRadius: '8px',
+  },
+  
+  passwordInputContainer: {
+    position: 'relative' as const,
+    width: '100%',
+  },
+  passwordInput: {
+    width: '100%',
+    padding: '8px',
+    paddingRight: '40px',
+    borderRadius: '4px',
+    border: '1px solid #ddd',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    color: 'white',
+  },
+  sectionTitle: {
+    fontSize: '1.2rem',
+    marginBottom: '1rem',
+    color: 'white',
+  },
+  passwordToggle: {
+    position: 'absolute' as const,
+    right: '5px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    background: 'none',
+    border: 'none',
+    color: 'white',
+    cursor: 'pointer',
+  },
+  
 };
+
 
 export default PerfilBarbero;

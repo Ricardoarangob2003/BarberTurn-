@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, CreditCard, Lock, ArrowLeft, Camera, Plus, Eye, EyeOff } from 'lucide-react';
+import { User, CreditCard, Lock, ArrowLeft, Camera, Plus, Trash2, Eye, EyeOff } from 'lucide-react';
 import axiosInstance from '../../axiosConfig';
 
 interface UserData {
@@ -9,11 +9,12 @@ interface UserData {
   apellido: string;
   email: string;
   telefono: string;
-  imagen: string;
+  imagenPerfil: string;
 }
 
 interface Credentials {
   username: string;
+  
 }
 
 interface PaymentMethod {
@@ -31,6 +32,7 @@ const PerfilCliente: React.FC = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [showPasswords, setShowPasswords] = useState({
+    currentPassword: false,
     newPassword: false,
     confirmPassword: false,
   });
@@ -110,8 +112,9 @@ const PerfilCliente: React.FC = () => {
 
     const form = e.currentTarget;
     const newPassword = (form.elements.namedItem('newPassword') as HTMLInputElement).value;
-    const confirmPassword = (form.elements.namedItem('confirmPassword') as HTMLInputElement).value;
+    const confirmPassword = (form.elements.namedItem('confirmPassword') as HTMLInputElement).value; // Confirmar contraseña
 
+    // Verifica si la nueva contraseña y la confirmación coinciden
     if (newPassword !== confirmPassword) {
       setError('Las contraseñas nuevas no coinciden');
       setIsLoading(false);
@@ -126,7 +129,8 @@ const PerfilCliente: React.FC = () => {
 
     try {
       if (userData) {
-        await axiosInstance.put(`/user/cliente/${userData.id}/password`, { newPassword });
+        // Enviar solo la nueva contraseña
+        await axiosInstance.put(`/user/cliente/${userData.id}`, { password: newPassword });
         setSuccess('Contraseña cambiada con éxito');
         form.reset();
       }
@@ -135,7 +139,7 @@ const PerfilCliente: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+};
 
   const handleAddPaymentMethod = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -150,7 +154,7 @@ const PerfilCliente: React.FC = () => {
 
     try {
       if (userData) {
-        const response = await axiosInstance.post(`/user/payment-methods/${userData.id}`, { cardNumber, expiryDate, cvv });
+        const response = await axiosInstance.put(`/user/cliente/${userData.id}`, { cardNumber, expiryDate, cvv });
         const newPaymentMethod = response.data;
         const updatedPaymentMethods = [...paymentMethods, newPaymentMethod];
         setPaymentMethods(updatedPaymentMethods);
@@ -198,7 +202,7 @@ const PerfilCliente: React.FC = () => {
         const response = await axiosInstance.put(`/cliente/imagen/${userData.id}`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
-        const updatedUser = { ...userData, imagen: response.data.imageUrl };
+        const updatedUser = { ...userData, imagenPerfil: response.data.imageUrl };
         setUserData(updatedUser);
         localStorage.setItem('user', JSON.stringify(updatedUser));
         setSuccess('Imagen de perfil actualizada con éxito');
@@ -221,7 +225,7 @@ const PerfilCliente: React.FC = () => {
   return (
     <div style={styles.wrapper}>
       <div style={styles.container}>
-        <Link to="/Barberias-Disponibles" style={styles.backButton}>
+        <Link to="/" style={styles.backButton}>
           <ArrowLeft size={20} />
           Volver
         </Link>
@@ -229,7 +233,7 @@ const PerfilCliente: React.FC = () => {
         
         <div style={styles.profileImageContainer}>
           <img 
-            src={userData.imagen || '/placeholder.svg?height=100&width=100'} 
+            src={userData.imagenPerfil || '/placeholder.svg?height=100&width=100'} 
             alt="Perfil" 
             style={styles.profileImage} 
           />
@@ -350,6 +354,8 @@ const PerfilCliente: React.FC = () => {
             <h3 style={styles.subtitle}>Cambiar Contraseña</h3>
             <form onSubmit={handlePasswordChange} style={styles.form}>
               <div style={styles.inputGroup}>
+              </div>
+              <div style={styles.inputGroup}>
                 <label htmlFor="newPassword" style={styles.label}>Nueva Contraseña:</label>
                 <div style={styles.passwordInputWrapper}>
                   <input
@@ -403,11 +409,12 @@ const PerfilCliente: React.FC = () => {
                 <div key={method.id} style={styles.paymentMethod}>
                   <CreditCard size={20} />
                   <span>{method.tipo} terminada en {method.ultimosDigitos}</span>
-                  <button
+                  <button 
                     onClick={() => handleDeletePaymentMethod(method.id)}
                     style={styles.deleteButton}
+                    disabled={isLoading}
                   >
-                    Eliminar
+                    <Trash2 size={20} />
                   </button>
                 </div>
               ))
