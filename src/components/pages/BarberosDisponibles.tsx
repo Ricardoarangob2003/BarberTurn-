@@ -8,6 +8,7 @@ interface Barber {
   nombre: string;
   local: string;
   email?: string;
+  imagen?: string;
 }
 
 const BarberosDisponibles: React.FC = () => {
@@ -52,6 +53,11 @@ const BarberosDisponibles: React.FC = () => {
     setIsMenuOpen(false);
   };
 
+  const getImageUrl = (imageBlob) => {
+    return `data:image/jpeg;base64,${imageBlob}`;
+  };
+  
+
   if (loading) {
     return <div style={styles.loading}>Cargando barberos...</div>;
   }
@@ -94,7 +100,11 @@ const BarberosDisponibles: React.FC = () => {
                 style={styles.barberItem}
               >
                 <div style={styles.profilePicture}>
-                  <Scissors size={30} color="white" />
+                  {barber.imagen ? (
+                    <img src={getImageUrl(barber.imagen)} alt={barber.nombre} style={styles.barberImage} />
+                  ) : (
+                    <Scissors size={30} color="white" />
+                  )}
                 </div>
                 <div style={styles.barberInfo}>
                   <h3 style={styles.barberName}>{barber.nombre}</h3>
@@ -215,6 +225,12 @@ const styles = {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
+  },
+  barberImage: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover' as const,
   },
   barberInfo: {
     flex: 1,

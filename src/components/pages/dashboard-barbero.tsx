@@ -55,7 +55,6 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
   const logout = () => {
     localStorage.removeItem('user');
-    localStorage.removeItem('token');
     setUser(null);
     navigate('/iniciar-sesion');
   };
@@ -65,6 +64,10 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       {children}
     </AuthContext.Provider>
   );
+};
+
+const getImageUrl = (imageBlob: string) => {
+  return `data:image/jpeg;base64,${imageBlob}`;
 };
 
 const BarberDashboard: React.FC = () => {
@@ -85,31 +88,16 @@ const BarberDashboard: React.FC = () => {
     const fetchTurnos = async () => {
       try {
         const response = await axiosInstance.get("http://localhost:8090/api/turno");
-        console.log("Respuesta de la API:", response.data);
-
         const fetchedTurnos = response.data;
-
         if (!Array.isArray(fetchedTurnos)) {
-          console.error("La respuesta de la API no es un array:", fetchedTurnos);
           setError('Error: Los datos recibidos no tienen el formato esperado.');
           setLoading(false);
           return;
         }
-
-        const barberTurnos = fetchedTurnos.filter((turno: Turno) => {
-          if (!turno || typeof turno !== 'object') {
-            console.warn("Turno inválido encontrado:", turno);
-            return false;
-          }
-          return turno.emailBarbero === user.email;
-        });
-
-        console.log("Turnos filtrados del barbero:", barberTurnos);
-
+        const barberTurnos = fetchedTurnos.filter((turno: Turno) => turno.emailBarbero === user.email);
         setAllTurnos(barberTurnos);
         setLoading(false);
       } catch (err) {
-        console.error('Error al obtener los turnos:', err);
         setError('Error al cargar los turnos. Por favor, intente nuevamente.');
         setLoading(false);
       }
@@ -121,21 +109,11 @@ const BarberDashboard: React.FC = () => {
   const handleUpdateTurnoStatus = async (id: string, newStatus: string) => {
     try {
       const turnoToUpdate = allTurnos.find(turno => turno.id === id);
-      
-      if (!turnoToUpdate) {
-        console.error("No se encontró el turno a actualizar");
-        return;
-      }
-  
+      if (!turnoToUpdate) return;
       const updatedTurno = { ...turnoToUpdate, estado: newStatus };
-  
       await axiosInstance.put(`http://localhost:8090/api/turno/${id}`, updatedTurno);
-  
-      setAllTurnos(allTurnos.map(turno => 
-        turno.id === id ? { ...turno, estado: newStatus } : turno
-      ));
-    } catch (err) {
-      console.error(`Error al actualizar el turno a ${newStatus}:`, err);
+      setAllTurnos(allTurnos.map(turno => turno.id === id ? { ...turno, estado: newStatus } : turno));
+    } catch {
       setError(`Error al actualizar el turno a ${newStatus}. Por favor, intente nuevamente.`);
     }
   };
@@ -147,13 +125,9 @@ const BarberDashboard: React.FC = () => {
     return false;
   });
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
-  const navigateToProfile = () => {
-    navigate('/perfil-barbero');
-  };
+  const navigateToProfile = () => navigate('/perfil-barbero');
 
   if (loading) {
     return <div style={styles.loading}>Cargando tus turnos...</div>;
@@ -164,9 +138,7 @@ const BarberDashboard: React.FC = () => {
       <div style={styles.error}>
         <AlertTriangle size={24} />
         <p>{error}</p>
-        <button onClick={() => window.location.reload()} style={styles.reloadButton}>
-          Intentar de nuevo
-        </button>
+        <button onClick={() => window.location.reload()} style={styles.reloadButton}>Intentar de nuevo</button>
       </div>
     );
   }
@@ -180,7 +152,7 @@ const BarberDashboard: React.FC = () => {
         <div style={styles.headerButtons}>
           <button onClick={toggleMenu} style={styles.menuButton}>
             {user.imagen ? (
-              <img src={user.imagen} alt="Perfil" style={styles.profileImage} />
+              <img src={getImageUrl(user.imagen)} alt="Perfil" style={styles.profileImage} />
             ) : (
               <User size={20} />
             )}
@@ -201,34 +173,11 @@ const BarberDashboard: React.FC = () => {
       </div>
       <div style={styles.content}>
         <p style={styles.welcomeMessage}>Bienvenido, {user.nombre} {user.apellido}</p>
-        
         <div style={styles.tabContainer}>
-          <button 
-            style={activeTab === 'pendientes' ? {...styles.tabButton, ...styles.activeTab} : styles.tabButton} 
-            onClick={() => setActiveTab('pendientes')}
-          >
-            Turnos Pendientes ({allTurnos.filter(t => t.estado.toLowerCase() === 'pendiente').length})
-          </button>
-          <button 
-            style={activeTab === 'completados' ? {...styles.tabButton, ...styles.activeTab} : styles.tabButton} 
-            onClick={() => setActiveTab('completados')}
-          >
-            Turnos Completados ({allTurnos.filter(t => t.estado.toLowerCase() === 'completado').length})
-          </button>
-          <button 
-            style={activeTab === 'cancelados' ? {...styles.tabButton, ...styles.activeTab} : styles.tabButton} 
-            onClick={() => setActiveTab('cancelados')}
-          >
-            Turnos Cancelados ({allTurnos.filter(t => t.estado.toLowerCase() === 'cancelado').length})
-          </button>
+          <button style={activeTab === 'pendientes' ? {...styles.tabButton, ...styles.activeTab} : styles.tabButton} onClick={() => setActiveTab('pendientes')}>Turnos Pendientes ({allTurnos.filter(t => t.estado.toLowerCase() === 'pendiente').length})</button>
+          <button style={activeTab === 'completados' ? {...styles.tabButton, ...styles.activeTab} : styles.tabButton} onClick={() => setActiveTab('completados')}>Turnos Completados ({allTurnos.filter(t => t.estado.toLowerCase() === 'completado').length})</button>
+          <button style={activeTab === 'cancelados' ? {...styles.tabButton, ...styles.activeTab} : styles.tabButton} onClick={() => setActiveTab('cancelados')}>Turnos Cancelados ({allTurnos.filter(t => t.estado.toLowerCase() === 'cancelado').length})</button>
         </div>
-
-        <h2 style={styles.subtitle}>
-          {activeTab === 'pendientes' && 'Turnos Pendientes'}
-          {activeTab === 'completados' && 'Turnos Completados'}
-          {activeTab === 'cancelados' && 'Turnos Cancelados'}
-        </h2>
-
         <div style={styles.turnosList}>
           {filteredTurnos.map((turno) => (
             <div key={turno.id} style={styles.turnoItem}>
@@ -245,20 +194,8 @@ const BarberDashboard: React.FC = () => {
               </div>
               {activeTab === 'pendientes' && (
                 <div style={styles.turnoActions}>
-                  <button 
-                    onClick={() => handleUpdateTurnoStatus(turno.id, 'Completado')} 
-                    style={styles.completeButton}
-                  >
-                    <Check size={20} />
-                    Completar
-                  </button>
-                  <button 
-                    onClick={() => handleUpdateTurnoStatus(turno.id, 'Cancelado')} 
-                    style={styles.cancelButton}
-                  >
-                    <X size={20} />
-                    Cancelar
-                  </button>
+                  <button onClick={() => handleUpdateTurnoStatus(turno.id, 'Completado')} style={styles.completeButton}><Check size={20} />Completar</button>
+                  <button onClick={() => handleUpdateTurnoStatus(turno.id, 'Cancelado')} style={styles.cancelButton}><X size={20} />Cancelar</button>
                 </div>
               )}
             </div>
@@ -272,6 +209,7 @@ const BarberDashboard: React.FC = () => {
   );
 };
 
+// styles remain unchanged
 
 const styles = {
   container: {

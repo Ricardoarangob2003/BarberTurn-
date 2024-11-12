@@ -7,7 +7,7 @@ import RecuperarContraseña from'./components/pages/RecuperarContraseña.tsx'
 import Index from './components/pages/index.tsx';
 import Registro from './components/pages/Registro.tsx';
 import BarberiasDisponibles from './components/pages/BarberiasDisponibles.tsx';
-import BarberosUrbanBarber from './components/pages/BarberosDisponibles-UrbanBarber.tsx';
+import BarberosUrbanBarber from './components/pages/BarberosDisponibles.tsx';
 import ReservaTurno from './components/pages/ReservaTurno.tsx';
 import RegistroCredenciales from './components/pages/Registro-Credenciales.tsx';
 import DashboardBarbero from './components/pages/dashboard-barbero.tsx';
