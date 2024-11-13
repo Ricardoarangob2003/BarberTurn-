@@ -387,3 +387,4 @@ const styles = {
 };
 
 export default LoginRegister;
+

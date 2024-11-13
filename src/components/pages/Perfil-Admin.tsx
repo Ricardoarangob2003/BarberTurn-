@@ -6,7 +6,7 @@ import axiosInstance from '../../axiosConfig';
 interface BarberiaData {
   id: string;
   nombre: string;
-  email: string;
+  correo: string;
   telefono: string;
   direccion: string;
   imagen: string;
@@ -70,7 +70,7 @@ const PerfilBarberia: React.FC = () => {
 
     try {
       if (barberiaData) {
-        await axiosInstance.put(`/barberia/${barberiaData.id}`, barberiaData);
+        await axiosInstance.put(`/adminbarberia/${barberiaData.id}`, barberiaData);
         setSuccess('Datos de la barbería actualizados con éxito');
       }
     } catch (error) {
@@ -91,7 +91,7 @@ const PerfilBarberia: React.FC = () => {
         if (credentials.newPassword !== credentials.confirmPassword) {
           throw new Error('Las contraseñas nuevas no coinciden');
         }
-        await axiosInstance.put(`/local${barberiaData.id}`, credentials);
+        await axiosInstance.put(`/adminbarberia/${barberiaData.id}`, credentials);
         setSuccess('Credenciales actualizadas con éxito');
         setCredentials(prev => ({ ...prev, password: '', newPassword: '', confirmPassword: '' }));
       }
@@ -112,7 +112,7 @@ const PerfilBarberia: React.FC = () => {
       setSuccess('');
 
       try {
-        const response = await axiosInstance.put(`/barberia/imagen/${barberiaData.id}`, formData, {
+        const response = await axiosInstance.put(`/local/imagen/${barberiaData.id}`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
         setBarberiaData(prev => prev ? { ...prev, imagen: response.data.imageUrl } : null);
@@ -236,7 +236,7 @@ const PerfilBarberia: React.FC = () => {
                 type="email"
                 id="email"
                 name="email"
-                value={barberiaData.email}
+                value={barberiaData.correo}
                 onChange={handleInputChange}
                 style={styles.input}
                 required

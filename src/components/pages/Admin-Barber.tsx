@@ -1,151 +1,180 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Star, User, Calendar } from 'lucide-react';
-import axiosInstance from '../../axiosConfig';
+import { useNavigate } from 'react-router-dom';
+import { api } from '../../axiosConfig';
 
-interface Barbershop {
+interface Barber {
   id: string;
+  nombre: string;
+  especialidad: string;
   local: string;
-  direccion: string;
-  telefono: string;
-  calificacion: number;
-  imagen?: string;
 }
 
-const BarberiasDisponibles: React.FC = () => {
-  const [barbershops, setBarbershops] = useState<Barbershop[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+interface Turno {
+  id: string;
+  cliente: string;
+  fecha: string;
+  hora: string;
+  estado: 'pendiente' | 'completado' | 'cancelado';
+  emailBarbero: string;
+  local: string;
+}
+
+interface UserData {
+  id: string;
+  correo: string;
+  nombre: string;
+  apellido: string;
+  local: string;
+  imagen: string; // Añadido el campo de imagen en base64
+}
+
+const AdminBarber: React.FC = () => {
+  const [barbers, setBarbers] = useState<Barber[]>([]);
+  const [turnos, setTurnos] = useState<Turno[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [showCompleted, setShowCompleted] = useState(false);
+  const [menuVisible, setMenuVisible] = useState(false); // Estado para controlar el menú desplegable
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchBarbershops = async () => {
-      try {
-        const response = await axiosInstance.get('local');
-        setBarbershops(response.data);
-        setIsLoading(false);
-      } catch (err) {
-        console.error('Error fetching barbershops:', err);
-        setError('Error al cargar las barberías. Por favor, intente de nuevo más tarde.');
-        setIsLoading(false);
-      }
-    };
+    const storedUserData = localStorage.getItem('user');
+    if (!storedUserData) {
+      setError('No se encontró información de usuario. Por favor, inicia sesión nuevamente.');
+      setLoading(false);
+      return;
+    }
 
-    fetchBarbershops();
+    try {
+      const parsedUserData: UserData = JSON.parse(storedUserData);
+      setUserData(parsedUserData);
+      fetchData(parsedUserData);
+    } catch (error) {
+      console.error('Error al parsear los datos del usuario:', error);
+      setError('Error al cargar los datos del usuario. Por favor, inicia sesión nuevamente.');
+      setLoading(false);
+    }
   }, []);
 
-  const handleBarbershopSelect = (id: string, name: string) => {
-    localStorage.setItem('selectedLocal', name);
-    localStorage.setItem('selectedLocalId', id);
+  const fetchData = async (userData: UserData) => {
+    try {
+      const [barbersResponse, turnosResponse] = await Promise.all([
+        api.get('/barberos'),
+        api.get('/turno')
+      ]);
+
+      const filteredBarbers = barbersResponse.data.filter(
+        (barber: Barber) => barber.local.toLowerCase() === userData.local.toLowerCase()
+      );
+      setBarbers(filteredBarbers);
+
+      const filteredTurnos = turnosResponse.data.filter(
+        (turno: Turno) => turno.local.toLowerCase() === userData.local.toLowerCase()
+      );
+      setTurnos(filteredTurnos);
+
+      setLoading(false);
+    } catch (err) {
+      console.error('Error al obtener datos:', err);
+      setError('Error al cargar los datos. Por favor, intenta de nuevo.');
+      setLoading(false);
+    }
+  };
+
+  const handleTicketTurnosClick = () => {
+    navigate('/ticket-turnos');
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    navigate('/iniciar-sesion-barberia');
+  };
+
+  const toggleCompletedTurnos = () => {
+    setShowCompleted(!showCompleted);
   };
 
   const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
+    setMenuVisible(!menuVisible);
   };
 
-  const navigateTo = (path: string) => {
-    navigate(path);
-    setIsMenuOpen(false);
-  };
+  if (loading) return <div style={styles.loading}>Cargando...</div>;
+  if (error) return <div style={styles.error}>{error}</div>;
+  if (!userData) return <div style={styles.error}>No se pudo cargar la información del usuario.</div>;
 
-  // Obtener la imagen de perfil desde localStorage
-  const userInfo = JSON.parse(localStorage.getItem('user') || '{}');
-  const userImage = userInfo.imagen || '';
-
-  if (isLoading) {
-    return (
-      <div style={styles.container}>
-        <div style={styles.content}>
-          <h1 style={styles.title}>BarberTurn</h1>
-          <p style={styles.loadingText}>Cargando barberías...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div style={styles.container}>
-        <div style={styles.content}>
-          <h1 style={styles.title}>BarberTurn</h1>
-          <p style={styles.errorText}>{error}</p>
-        </div>
-      </div>
-    );
-  }
+  const pendingTurnos = turnos.filter(turno => turno.estado === 'pendiente');
+  const completedTurnos = turnos.filter(turno => turno.estado === 'completado');
 
   return (
     <div style={styles.container}>
-      <div style={styles.content}>
-        <div style={styles.header}>
-          <h1 style={styles.title}>BarberTurn</h1>
-          <button onClick={toggleMenu} style={styles.menuButton}>
-            {userImage ? (
-              <img
-                src={`data:image/jpeg;base64,${userImage}`}
-                alt="User"
-                style={{ width: '24px', height: '24px', borderRadius: '50%' }}
-              />
-            ) : (
-              <User size={24} />
-            )}
-          </button>
-          {isMenuOpen && (
-            <div style={styles.menuDropdown}>
-              <button onClick={() => navigateTo('/mi-perfil')} style={styles.menuItem}>
-                <User size={18} />
-                <span>Mi Perfil</span>
-              </button>
-              <button onClick={() => navigateTo('/mis-turnos')} style={styles.menuItem}>
-                <Calendar size={18} />
-                <span>Mis Turnos</span>
-              </button>
+      <nav style={styles.nav}>
+        <img
+          src={`data:image/jpeg;base64,${userData.imagen}`}
+          alt="Perfil"
+          style={styles.profileIcon}
+          onClick={toggleMenu}
+        />
+        {menuVisible && (
+          <div style={styles.menu}>
+            <button onClick={() => navigate('/perfil-admin')} style={styles.menuItem}>Mi Perfil</button>
+            <button onClick={handleLogout} style={styles.menuItem}>Cerrar Sesión</button>
+          </div>
+        )}
+      </nav>
+
+      <div style={styles.panel}>
+        <h1 style={styles.title}>Panel de Administración - {userData.local}</h1>
+
+        <section style={styles.section}>
+          <h2 style={styles.sectionTitle}>Barberos</h2>
+          <ul style={styles.list}>
+            {barbers.map(barber => (
+              <li key={barber.id} style={styles.listItem}>
+                {barber.nombre} - {barber.especialidad}
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section style={styles.section}>
+          <h2 style={styles.sectionTitle}>Turnos</h2>
+          <div style={styles.columns}>
+            <div style={styles.column}>
+              <h3 style={styles.columnTitle}>Pendientes</h3>
+              <ul style={styles.list}>
+                {pendingTurnos.map(turno => (
+                  <li key={turno.id} style={styles.listItem}>
+                    <div>Hora: {turno.hora}</div>
+                    <div>Cliente: {turno.cliente}</div>
+                    <div>Barbero: {turno.emailBarbero}</div>
+                  </li>
+                ))}
+              </ul>
             </div>
-          )}
-        </div>
-        <h2 style={styles.subtitle}>Barberías Disponibles</h2>
-        <div style={styles.barberList}>
-          {barbershops.map((shop) => (
-            <Link
-              key={shop.id}
-              to={`/local/${encodeURIComponent(shop.local)}`}
-              style={styles.barberLink}
-              onClick={() => handleBarbershopSelect(shop.id, shop.local)}
-            >
-              <div style={styles.barberItem}>
-                <div style={styles.profilePicture}>
-                  {shop.imagen ? (
-                    <img
-                      src={`data:image/jpeg;base64,${shop.imagen}`}
-                      alt={shop.local}
-                      style={styles.profileImage}
-                    />
-                  ) : (
-                    <User size={24} />
-                  )}
-                </div>
-                <div style={styles.barberInfo}>
-                  <h3 style={styles.barberName}>{shop.local}</h3>
-                  <p style={styles.barberSlogan}>{shop.direccion}</p>
-                  <div style={styles.stars}>
-                    {[...Array(5)].map((_, index) => (
-                      <Star
-                        key={index}
-                        size={12}
-                        fill={index < shop.calificacion ? 'gold' : 'none'}
-                        stroke={index < shop.calificacion ? 'gold' : 'gray'}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-        <div style={styles.footer}>
-          © 2024 BarberTurn. Todos los derechos reservados.
-        </div>
+            <div style={styles.column}>
+              <h3 style={styles.columnTitle} onClick={toggleCompletedTurnos}>
+                Completados {showCompleted ? '▲' : '▼'}
+              </h3>
+              {showCompleted && (
+                <ul style={styles.list}>
+                  {completedTurnos.map(turno => (
+                    <li key={turno.id} style={styles.listItem}>
+                      <div>Fecha: {turno.fecha}</div>
+                      <div>Hora: {turno.hora}</div>
+                      <div>Cliente: {turno.cliente}</div>
+                      <div>Barbero: {turno.emailBarbero}</div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        </section>
+
+        <button onClick={handleTicketTurnosClick} style={styles.button}>
+          Ir a Ticket-Turnos
+        </button>
       </div>
     </div>
   );
@@ -153,145 +182,115 @@ const BarberiasDisponibles: React.FC = () => {
 
 const styles = {
   container: {
+    backgroundImage: 'url("/assets/imgs/background-gallery.jpg")',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
     minHeight: '100vh',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundImage: `url('https://hebbkx1anhila5yf.public.blob.vercel-storage.com/background-gallery-Q7o6O7FB8cgz1SLHAEc9d2u9QM5Lsr.jpg')`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-  },
-  content: {
-    width: '90%',
-    maxWidth: '800px',
     padding: '20px',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: '10px',
-    boxShadow: '0 0 10px rgba(0,0,0,0.1)',
     position: 'relative' as const,
   },
-  header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '20px',
-  },
-  title: {
-    fontSize: '2.5em',
-    color: '#333',
-    margin: 0,
-  },
-  menuButton: {
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    padding: '5px',
-  },
-  menuDropdown: {
+  nav: {
     position: 'absolute' as const,
-    top: '60px',
+    top: '20px',
     right: '20px',
+    display: 'flex',
+    alignItems: 'center',
+  },
+  profileIcon: {
+    width: '40px',
+    height: '40px',
+    borderRadius: '50%',
+    cursor: 'pointer',
+  },
+  menu: {
+    position: 'absolute' as const,
+    top: '50px',
+    right: '0',
     backgroundColor: 'white',
-    borderRadius: '5px',
-    boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-    zIndex: 1000,
-  },
-  menuItem: {
-    display: 'flex',
-    alignItems: 'center',
-    padding: '10px 15px',
-    border: 'none',
-    background: 'none',
-    width: '100%',
-    textAlign: 'left' as const,
-    cursor: 'pointer',
-    transition: 'background-color 0.2s',
-    ':hover': {
-      backgroundColor: '#f0f0f0',
-    },
-  },
-  subtitle: {
-    fontSize: '1.5em',
-    textAlign: 'center' as const,
-    marginBottom: '20px',
-    color: '#666',
-  },
-  barberList: {
-    display: 'flex',
-    flexDirection: 'row' as const,
-    flexWrap: 'wrap' as const,
-    justifyContent: 'center',
-    gap: '20px',
-  },
-  barberLink: {
-    textDecoration: 'none',
-    color: 'inherit',
-    flex: '1 1 200px',
-    maxWidth: '250px',
-    cursor: 'pointer',
-  },
-  barberItem: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    alignItems: 'center',
-    padding: '20px',
     border: '1px solid #ddd',
     borderRadius: '8px',
-    transition: 'transform 0.2s, box-shadow 0.2s',
-    backgroundColor: 'white',
-    ':hover': {
-      transform: 'translateY(-5px)',
-      boxShadow: '0 5px 15px rgba(0,0,0,0.1)',
-    },
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+    zIndex: 1000,
+    overflow: 'hidden',
   },
-  profilePicture: {
-    width: '60px',
-    height: '60px',
-    borderRadius: '50%',
-    backgroundColor: '#f0f0f0',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: '10px',
-  },
-  profileImage: {
+  menuItem: {
+    padding: '10px 20px',
+    cursor: 'pointer',
+    background: 'none',
+    border: 'none',
     width: '100%',
-    height: '100%',
-    borderRadius: '50%',
-    objectFit: 'cover' as 'cover',
+    textAlign: 'left' as const,
+    fontSize: '14px',
   },
-  barberInfo: {
+  panel: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: '8px',
+    padding: '20px',
+    maxWidth: '800px',
+    width: '100%',
+    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+  },
+  title: {
+    fontSize: '24px',
+    fontWeight: 'bold' as const,
+    marginBottom: '20px',
     textAlign: 'center' as const,
-  },
-  barberName: {
-    fontSize: '1.2em',
-    fontWeight: 'bold',
     color: '#333',
-    margin: '5px 0',
   },
-  barberSlogan: {
-    fontSize: '0.9em',
-    color: '#777',
-    margin: '5px 0',
+  section: {
+    marginBottom: '20px',
   },
-  stars: {
+  sectionTitle: {
+    fontSize: '18px',
+    fontWeight: 'bold' as const,
+    color: '#555',
+  },
+  list: {
+    listStyleType: 'none' as const,
+    padding: 0,
+  },
+  listItem: {
+    padding: '10px',
+    borderBottom: '1px solid #ddd',
+    color: '#333',
+  },
+  columns: {
     display: 'flex',
-    alignItems: 'center',
+    gap: '20px',
   },
-  footer: {
-    marginTop: '20px',
-    textAlign: 'center' as const,
-    fontSize: '0.8em',
-    color: '#777',
+  column: {
+    flex: 1,
   },
-  loadingText: {
-    fontSize: '1.2em',
+  columnTitle: {
+    fontSize: '16px',
+    fontWeight: 'bold' as const,
+    cursor: 'pointer',
     color: '#666',
   },
-  errorText: {
-    fontSize: '1.2em',
+  button: {
+    padding: '10px 20px',
+    fontSize: '16px',
+    backgroundColor: '#4CAF50',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    display: 'block',
+    margin: '20px auto 0',
+  },
+  loading: {
+    textAlign: 'center' as const,
+    fontSize: '20px',
+  },
+  error: {
     color: 'red',
+    textAlign: 'center' as const,
+    fontSize: '20px',
   },
 };
 
-export default BarberiasDisponibles;
+export default AdminBarber;

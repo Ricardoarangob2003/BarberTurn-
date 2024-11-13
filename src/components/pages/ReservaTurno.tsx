@@ -105,7 +105,7 @@ const ReservaTurno: React.FC = () => {
 
     const isToday = selectedDateObj.getTime() === today.getTime();
     const currentHour = isToday ? new Date().getHours() : 9;
-    const slots = generateTimeSlots(Math.max(9, currentHour), 21, 15);
+    const slots = generateTimeSlots(Math.max(9, currentHour), 21, 60);
 
     setAvailableHours(isToday ? filterCurrentDaySlots(slots) : slots);
   };
