@@ -286,4 +286,4 @@ const styles = {
   },
 };
 
-export default BarberiasDisponibles;
+export default BarberiasDisponibles

@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Premium from './components/pages/Premium.tsx';
+import PerfilAdmin from './components/pages/Perfil-Admin.tsx';
 import Login from './components/pages/Login.tsx';
 import Galeria from './components/pages/Galeria.tsx';
 import RecuperarContraseña from'./components/pages/RecuperarContraseña.tsx'
@@ -53,6 +54,7 @@ function App() {
           <Route path='/Iniciar-sesion-Barberia' element={<LoginRegister />} />
           <Route path='/Mi-Perfil' element={<PerfilUsuario />} />
           <Route path='/Perfil-barbero' element={<PerfilBarbero />} />
+          <Route path='/Perfil-admin' element={<PerfilAdmin />} />
 
         </Routes>
       </div>
