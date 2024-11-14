@@ -3,6 +3,15 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { api } from '../../axiosConfig';
 
+interface AdminData {
+  id: string;
+  correo: string;
+  nombre: string;
+  apellido: string;
+  local: string;
+  imagen: string;
+}
+
 const LoginRegister: React.FC = () => {
   const [esLogin, setEsLogin] = useState(true);
   const [paso, setPaso] = useState(1);
@@ -28,12 +37,19 @@ const LoginRegister: React.FC = () => {
     const tieneEspecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
     const tieneOchoCaracteres = password.length >= 8;
 
-    const errores = [];
-    if (!tieneMinuscula) errores.push("una letra minúscula");
-    if (!tieneMayuscula) errores.push("una letra mayúscula");
-    if (!tieneNumero) errores.push("un número");
-    if (!tieneEspecial) errores.push("un carácter especial (@$!%*?)");
-    if (!tieneOchoCaracteres) errores.push("al menos 8 caracteres");
+    const errores: string[] = [];
+
+if (!tieneMinuscula) errores.push("una letra minúscula");
+if (!tieneMayuscula) errores.push("una letra mayúscula");
+if (!tieneNumero) errores.push("un número");
+if (!tieneEspecial) errores.push("un carácter especial (@$!%*?)");
+if (!tieneOchoCaracteres) errores.push("al menos 8 caracteres");
+
+if (errores.length > 0) {
+    // Convierte el arreglo `errores` en una cadena separada por comas
+    const mensajeError = `La contraseña debe contener: ${errores.join(", ")}.`;
+    console.log(mensajeError);
+}
 
     return {
       esValida: tieneMinuscula && tieneMayuscula && tieneNumero && tieneEspecial && tieneOchoCaracteres,
@@ -44,8 +60,8 @@ const LoginRegister: React.FC = () => {
   const manejarLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const respuesta = await api.get('/adminbarberia');
-      const adminEncontrado = respuesta.data.find((admin: any) => 
+      const respuesta = await api.get<AdminData[]>('/adminbarberia');
+      const adminEncontrado = respuesta.data.find(admin => 
         admin.correo === correo && admin.contrasena === contrasena
       );
 
@@ -56,6 +72,7 @@ const LoginRegister: React.FC = () => {
           nombre: adminEncontrado.nombre,
           apellido: adminEncontrado.apellido,
           local: adminEncontrado.local,
+          imagen: adminEncontrado.imagen, // Adding the image to localStorage
         }));
         
         setMensajeExito('Inicio de sesión exitoso. Redirigiendo...');
@@ -87,7 +104,7 @@ const LoginRegister: React.FC = () => {
   const manejarRegistroPaso2 = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const respuestaAdmin = await api.post('/adminbarberia/post', {
+      const respuestaAdmin = await api.post<AdminData>('/adminbarberia/post', {
         correo,
         nombre,
         apellido,
@@ -98,14 +115,6 @@ const LoginRegister: React.FC = () => {
       });
 
       if (respuestaAdmin.data && respuestaAdmin.data.id) {
-        await api.post('/local/post', {
-          adminId: respuestaAdmin.data.id,
-          nombre: local,
-          direccion,
-          telefono,
-          local
-        });
-
         setMensajeExito('Registro exitoso. Redirigiendo al inicio de sesión...');
         setTimeout(() => {
           setEsLogin(true);
@@ -269,7 +278,6 @@ const LoginRegister: React.FC = () => {
           )
         )}
         
-        {/* Botón de volver añadido aquí */}
         <Link to="/" style={styles.backButton}>
           Volver a la página principal
         </Link>
@@ -374,7 +382,6 @@ const styles = {
     marginBottom: '1rem',
     textAlign: 'center' as const,
   },
-  // Nuevo estilo para el botón de volver
   backButton: {
     display: 'block',
     textAlign: 'center' as const,
@@ -387,4 +394,3 @@ const styles = {
 };
 
 export default LoginRegister;
-

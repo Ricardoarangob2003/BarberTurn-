@@ -5,7 +5,7 @@ import axiosInstance from '../../axiosConfig';
 
 interface BarberiaData {
   id: string;
-  nombre: string;
+  local: string;
   correo: string;
   telefono: string;
   direccion: string;
@@ -18,7 +18,7 @@ interface Credentials {
   confirmPassword: string;
 }
 
-const PerfilBarberia: React.FC = () => {
+const PerfilAdmin: React.FC = () => {
   const [barberiaData, setBarberiaData] = useState<BarberiaData | null>(null);
   const [credentials, setCredentials] = useState<Credentials>({
     password: '',
@@ -39,10 +39,15 @@ const PerfilBarberia: React.FC = () => {
   useEffect(() => {
     const fetchBarberiaData = async () => {
       try {
-        const response = await axiosInstance.get('/local');
+        const storedUser = localStorage.getItem('user');
+        if (!storedUser) {
+          throw new Error('No user data found');
+        }
+        const userData = JSON.parse(storedUser);
+        const response = await axiosInstance.get(`/adminbarberia/${userData.id}`);
         setBarberiaData(response.data);
-        
       } catch (error) {
+        console.error('Error al cargar los datos de la barbería:', error);
         setError('Error al cargar los datos de la barbería');
       } finally {
         setIsLoading(false);
@@ -72,6 +77,7 @@ const PerfilBarberia: React.FC = () => {
       if (barberiaData) {
         await axiosInstance.put(`/adminbarberia/${barberiaData.id}`, barberiaData);
         setSuccess('Datos de la barbería actualizados con éxito');
+        localStorage.setItem('user', JSON.stringify(barberiaData));
       }
     } catch (error) {
       setError('Error al actualizar los datos de la barbería');
@@ -87,13 +93,15 @@ const PerfilBarberia: React.FC = () => {
     setSuccess('');
 
     try {
-      if (barberiaData) {
-        if (credentials.newPassword !== credentials.confirmPassword) {
-          throw new Error('Las contraseñas nuevas no coinciden');
-        }
-        await axiosInstance.put(`/adminbarberia/${barberiaData.id}`, credentials);
-        setSuccess('Credenciales actualizadas con éxito');
-        setCredentials(prev => ({ ...prev, password: '', newPassword: '', confirmPassword: '' }));
+      if (barberiaData && credentials.newPassword === credentials.confirmPassword) {
+        await axiosInstance.put(`/adminbarberia/${barberiaData.id}`, {
+          password: credentials.password,
+          newPassword: credentials.newPassword
+        });
+        setSuccess('Contraseña actualizada con éxito');
+        setCredentials({ password: '', newPassword: '', confirmPassword: '' });
+      } else {
+        throw new Error('Las contraseñas nuevas no coinciden');
       }
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Error al actualizar las credenciales');
@@ -112,11 +120,19 @@ const PerfilBarberia: React.FC = () => {
       setSuccess('');
 
       try {
-        const response = await axiosInstance.put(`/local/imagen/${barberiaData.id}`, formData, {
+        const response = await axiosInstance.put(`/adminbarberia/imagen/${barberiaData.id}`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
         setBarberiaData(prev => prev ? { ...prev, imagen: response.data.imageUrl } : null);
         setSuccess('Imagen de la barbería actualizada con éxito');
+        
+        // Update localStorage
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          const userData = JSON.parse(storedUser);
+          userData.imagen = response.data.imageUrl;
+          localStorage.setItem('user', JSON.stringify(userData));
+        }
       } catch (error) {
         setError('Error al actualizar la imagen de la barbería');
       } finally {
@@ -192,7 +208,7 @@ const PerfilBarberia: React.FC = () => {
                 type="text"
                 id="nombre"
                 name="nombre"
-                value={barberiaData.nombre}
+                value={barberiaData.local}
                 onChange={handleInputChange}
                 style={styles.input}
                 required
@@ -222,6 +238,18 @@ const PerfilBarberia: React.FC = () => {
                 required
               />
             </div>
+            <div style={styles.inputGroup}>
+              <label htmlFor="correo" style={styles.label}>Correo:</label>
+              <input
+                type="email"
+                id="correo"
+                name="correo"
+                value={barberiaData.correo}
+                onChange={handleInputChange}
+                style={styles.input}
+                required
+              />
+            </div>
             <button type="submit" style={styles.submitButton} disabled={isLoading}>
               {isLoading ? 'Actualizando...' : 'Actualizar Datos de la Barbería'}
             </button>
@@ -230,18 +258,6 @@ const PerfilBarberia: React.FC = () => {
 
         {activeTab === 'seguridad' && (
           <form onSubmit={handleSubmitCredentials} style={styles.form}>
-            <div style={styles.inputGroup}>
-              <label htmlFor="email" style={styles.label}>Email:</label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={barberiaData.correo}
-                onChange={handleInputChange}
-                style={styles.input}
-                required
-              />
-            </div>
             <div style={styles.inputGroup}>
             </div>
             <div style={styles.inputGroup}>
@@ -255,6 +271,7 @@ const PerfilBarberia: React.FC = () => {
                   onChange={handleCredentialsChange}
                   style={styles.input}
                   minLength={8}
+                  required
                 />
                 <button
                   type="button"
@@ -275,6 +292,8 @@ const PerfilBarberia: React.FC = () => {
                   value={credentials.confirmPassword}
                   onChange={handleCredentialsChange}
                   style={styles.input}
+                  minLength={8}
+                  required
                 />
                 <button
                   type="button"
@@ -448,4 +467,4 @@ const styles = {
   },
 };
 
-export default PerfilBarberia;
+export default PerfilAdmin;

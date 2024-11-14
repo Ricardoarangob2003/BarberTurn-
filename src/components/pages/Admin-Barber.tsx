@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../axiosConfig';
+import { User, LogOut } from 'lucide-react';
 
 interface Barber {
   id: string;
@@ -25,7 +26,7 @@ interface UserData {
   nombre: string;
   apellido: string;
   local: string;
-  imagen: string; // Añadido el campo de imagen en base64
+  imagen: string;
 }
 
 const AdminBarber: React.FC = () => {
@@ -35,7 +36,7 @@ const AdminBarber: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [showCompleted, setShowCompleted] = useState(false);
-  const [menuVisible, setMenuVisible] = useState(false); // Estado para controlar el menú desplegable
+  const [menuVisible, setMenuVisible] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -108,23 +109,35 @@ const AdminBarber: React.FC = () => {
 
   return (
     <div style={styles.container}>
-      <nav style={styles.nav}>
-        <img
-          src={`data:image/jpeg;base64,${userData.imagen}`}
-          alt="Perfil"
-          style={styles.profileIcon}
-          onClick={toggleMenu}
-        />
-        {menuVisible && (
-          <div style={styles.menu}>
-            <button onClick={() => navigate('/perfil-admin')} style={styles.menuItem}>Mi Perfil</button>
-            <button onClick={handleLogout} style={styles.menuItem}>Cerrar Sesión</button>
-          </div>
-        )}
-      </nav>
-
       <div style={styles.panel}>
-        <h1 style={styles.title}>Panel de Administración - {userData.local}</h1>
+        <div style={styles.header}>
+          <h1 style={styles.title}>Panel de Administración - {userData.local}</h1>
+          <div style={styles.userMenu}>
+            <button onClick={toggleMenu} style={styles.profileButton}>
+              {userData.imagen ? (
+                <img
+                  src={`data:image/jpeg;base64,${userData.imagen}`}
+                  alt="Perfil"
+                  style={styles.profileIcon}
+                />
+              ) : (
+                <User size={24} />
+              )}
+            </button>
+            {menuVisible && (
+              <div style={styles.menu}>
+                <button onClick={() => navigate('/perfil-admin')} style={styles.menuItem}>
+                  <User size={18} />
+                  <span>Mi Perfil</span>
+                </button>
+                <button onClick={handleLogout} style={styles.menuItem}>
+                  <LogOut size={18} />
+                  <span>Cerrar Sesión</span>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
 
         <section style={styles.section}>
           <h2 style={styles.sectionTitle}>Barberos</h2>
@@ -191,40 +204,6 @@ const styles = {
     justifyContent: 'center',
     alignItems: 'center',
     padding: '20px',
-    position: 'relative' as const,
-  },
-  nav: {
-    position: 'absolute' as const,
-    top: '20px',
-    right: '20px',
-    display: 'flex',
-    alignItems: 'center',
-  },
-  profileIcon: {
-    width: '40px',
-    height: '40px',
-    borderRadius: '50%',
-    cursor: 'pointer',
-  },
-  menu: {
-    position: 'absolute' as const,
-    top: '50px',
-    right: '0',
-    backgroundColor: 'white',
-    border: '1px solid #ddd',
-    borderRadius: '8px',
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-    zIndex: 1000,
-    overflow: 'hidden',
-  },
-  menuItem: {
-    padding: '10px 20px',
-    cursor: 'pointer',
-    background: 'none',
-    border: 'none',
-    width: '100%',
-    textAlign: 'left' as const,
-    fontSize: '14px',
   },
   panel: {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
@@ -234,12 +213,54 @@ const styles = {
     width: '100%',
     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
   },
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '20px',
+  },
   title: {
     fontSize: '24px',
     fontWeight: 'bold' as const,
-    marginBottom: '20px',
-    textAlign: 'center' as const,
     color: '#333',
+    margin: 0,
+  },
+  userMenu: {
+    position: 'relative' as const,
+  },
+  profileButton: {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    padding: 0,
+  },
+  profileIcon: {
+    width: '40px',
+    height: '40px',
+    borderRadius: '50%',
+    objectFit: 'cover' as const,
+  },
+  menu: {
+    position: 'absolute' as const,
+    top: '100%',
+    right: '0',
+    backgroundColor: 'white',
+    border: '1px solid #ddd',
+    borderRadius: '8px',
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+    zIndex: 1000,
+    overflow: 'hidden',
+  },
+  menuItem: {
+    display: 'flex',
+    alignItems: 'center',
+    padding: '10px 20px',
+    cursor: 'pointer',
+    background: 'none',
+    border: 'none',
+    width: '100%',
+    textAlign: 'left' as const,
+    fontSize: '14px',
   },
   section: {
     marginBottom: '20px',

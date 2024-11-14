@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Star, Menu, User, Calendar } from 'lucide-react';
+import { Star, Menu, User, Calendar, LogOut } from 'lucide-react';
 import axiosInstance from '../../axiosConfig';
 
 interface Barbershop {
@@ -9,6 +9,11 @@ interface Barbershop {
   direccion: string;
   telefono: string;
   calificacion: number;
+  imagen: string | null;
+}
+
+interface UserInfo {
+  imagen: string | null;
 }
 
 const BarberiasDisponibles: React.FC = () => {
@@ -16,6 +21,7 @@ const BarberiasDisponibles: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [userInfo, setUserInfo] = useState<UserInfo>({ imagen: null });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -31,7 +37,23 @@ const BarberiasDisponibles: React.FC = () => {
       }
     };
 
+    // Función para cargar la información del usuario desde localStorage
+    const loadUserInfo = () => {
+      const storedUserInfo = localStorage.getItem('user');
+      if (storedUserInfo) {
+        setUserInfo(JSON.parse(storedUserInfo));
+      }
+    };
+
     fetchBarbershops();
+    loadUserInfo();
+
+    // Escuchar cambios en localStorage para actualizar userInfo automáticamente
+    window.addEventListener('storage', loadUserInfo);
+
+    return () => {
+      window.removeEventListener('storage', loadUserInfo);
+    };
   }, []);
 
   const handleBarbershopSelect = (id: string, name: string) => {
@@ -48,9 +70,10 @@ const BarberiasDisponibles: React.FC = () => {
     setIsMenuOpen(false);
   };
 
-  // Obtener la imagen de perfil desde localStorage
-  const userInfo = JSON.parse(localStorage.getItem('user') || '{}');
-  const userImage = userInfo.imagen || ''; // Si no hay imagen, se usará el string vacío
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    navigate('/iniciar-sesion');
+  };
 
   if (isLoading) {
     return (
@@ -79,21 +102,35 @@ const BarberiasDisponibles: React.FC = () => {
       <div style={styles.content}>
         <div style={styles.header}>
           <h1 style={styles.title}>BarberTurn</h1>
-          <button onClick={toggleMenu} style={styles.menuButton}>
-            <Menu size={24} />
-          </button>
-          {isMenuOpen && (
-            <div style={styles.menuDropdown}>
-              <button onClick={() => navigateTo('/mi-perfil')} style={styles.menuItem}>
-                <User size={18} />
-                <span>Mi Perfil</span>
-              </button>
-              <button onClick={() => navigateTo('/mis-turnos')} style={styles.menuItem}>
-                <Calendar size={18} />
-                <span>Mis Turnos</span>
-              </button>
-            </div>
-          )}
+          <div style={styles.userMenuContainer}>
+            <button onClick={toggleMenu} style={styles.userMenuButton}>
+              {userInfo.imagen ? (
+                <img 
+                  src={`data:image/jpeg;base64,${userInfo.imagen}`} 
+                  alt="Profile" 
+                  style={styles.userMenuImage} 
+                />
+              ) : (
+                <User size={24} />
+              )}
+            </button>
+            {isMenuOpen && (
+              <div style={styles.menuDropdown}>
+                <button onClick={() => navigateTo('/mi-perfil')} style={styles.menuItem}>
+                  <User size={18} />
+                  <span>Mi Perfil</span>
+                </button>
+                <button onClick={() => navigateTo('/mis-turnos')} style={styles.menuItem}>
+                  <Calendar size={18} />
+                  <span>Mis Turnos</span>
+                </button>
+                <button onClick={handleLogout} style={styles.menuItem}>
+                  <LogOut size={18} />
+                  <span>Cerrar Sesión</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
         <h2 style={styles.subtitle}>Barberías Disponibles</h2>
         <div style={styles.barberList}>
@@ -106,14 +143,14 @@ const BarberiasDisponibles: React.FC = () => {
             >
               <div style={styles.barberItem}>
                 <div style={styles.profilePicture}>
-                  {/* Mostrar la imagen de perfil si existe, sino mostrar el placeholder */}
-                  {userImage ? (
-                    <img src={userImage} alt="Profile" style={styles.profileImage} />
+                  {shop.imagen ? (
+                    <img 
+                      src={`data:image/jpeg;base64,${shop.imagen}`} 
+                      alt={shop.local} 
+                      style={styles.profileImage} 
+                    />
                   ) : (
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="12" cy="8" r="5" stroke="currentColor" strokeWidth="2"/>
-                      <path d="M20 21C20 16.5817 16.4183 13 12 13C7.58172 13 4 16.5817 4 21" stroke="currentColor" strokeWidth="2"/>
-                    </svg>
+                    <User size={24} />
                   )}
                 </div>
                 <div style={styles.barberInfo}>
@@ -141,6 +178,7 @@ const BarberiasDisponibles: React.FC = () => {
     </div>
   );
 };
+
 
 const styles = {
   container: {
@@ -172,20 +210,37 @@ const styles = {
     color: '#333',
     margin: 0,
   },
-  menuButton: {
+  userMenuContainer: {
+    position: 'relative' as const,
+  },
+  userMenuButton: {
     background: 'none',
     border: 'none',
     cursor: 'pointer',
     padding: '5px',
+    borderRadius: '50%',
+    overflow: 'hidden',
+    width: '40px',
+    height: '40px',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  userMenuImage: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover' as const,
+    borderRadius: '50%',
   },
   menuDropdown: {
     position: 'absolute' as const,
-    top: '60px',
-    right: '20px',
+    top: '50px',
+    right: '0',
     backgroundColor: 'white',
     borderRadius: '5px',
     boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
     zIndex: 1000,
+    minWidth: '150px',
   },
   menuItem: {
     display: 'flex',
@@ -244,12 +299,12 @@ const styles = {
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: '10px',
+    overflow: 'hidden',
   },
   profileImage: {
     width: '100%',
     height: '100%',
-    borderRadius: '50%',
-    objectFit: 'cover' as 'cover', // Aquí aseguramos que sea un valor válido
+    objectFit: 'cover' as const,
   },
   barberInfo: {
     textAlign: 'center' as const,
@@ -279,11 +334,13 @@ const styles = {
   loadingText: {
     fontSize: '1.2em',
     color: '#555',
+    textAlign: 'center' as const,
   },
   errorText: {
     color: 'red',
     fontSize: '1.2em',
+    textAlign: 'center' as const,
   },
 };
 
-export default BarberiasDisponibles
+export default BarberiasDisponibles;

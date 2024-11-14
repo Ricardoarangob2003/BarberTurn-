@@ -225,7 +225,7 @@ const PerfilCliente: React.FC = () => {
   return (
     <div style={styles.wrapper}>
       <div style={styles.container}>
-        <Link to="/" style={styles.backButton}>
+        <Link to="/barberias-disponibles" style={styles.backButton}>
           <ArrowLeft size={20} />
           Volver
         </Link>
