@@ -1,5 +1,6 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 
 interface TipoCara {
   id: string;
@@ -25,8 +26,11 @@ const GaleriaSeleccionable: React.FC = () => {
 
   return (
     <div style={styles.container}>
+      <button onClick={() => navigate(-1)} style={styles.backButton}>
+        <ArrowLeft size={24} color="white" />
+      </button>
       <header style={styles.header}>
-        <h1 style={styles.headerTitle}>BarberTurn</h1>
+        <h1 style={styles.headerTitle}>BARBERTURN</h1>
       </header>
 
       <h1 style={styles.title}>Elige tu Tipo de Cara</h1>
@@ -65,25 +69,35 @@ const styles: { [key: string]: React.CSSProperties } = {
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     minHeight: '100vh',
+    position: 'relative',
+  },
+  backButton: {
+    position: 'absolute',
+    top: '20px',
+    left: '20px',
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '10px',
+    borderRadius: '50%',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   header: {
     backgroundColor: '#000',
     color: 'white',
     padding: '1rem',
     display: 'flex',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     alignItems: 'center',
-  },
-  backButton: {
-    color: 'white',
-    textDecoration: 'none',
-    padding: '0.5rem 1rem',
-    backgroundColor: '#555',
-    borderRadius: '5px',
+    
   },
   headerTitle: {
     margin: 0,
     fontSize: '1.5rem',
+    alignItems: 'right',
   },
   title: {
     color: 'white',

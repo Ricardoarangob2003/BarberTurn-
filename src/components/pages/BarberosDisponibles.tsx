@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Star, Scissors, ArrowLeft, Menu, User, Calendar } from 'lucide-react';
+import { Star, Scissors, ArrowLeft, UserCircle, Calendar, LogOut } from 'lucide-react';
 import axiosInstance from '../../axiosConfig';
 
 interface Barber {
@@ -16,6 +16,7 @@ const BarberosDisponibles: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [userImage, setUserImage] = useState<string | null>(null);
   const { nombreBarberia } = useParams<{ nombreBarberia: string }>();
   const navigate = useNavigate();
 
@@ -35,6 +36,11 @@ const BarberosDisponibles: React.FC = () => {
     };
 
     fetchBarbers();
+
+    const storedImage = localStorage.getItem('userImage');
+    if (storedImage) {
+      setUserImage(storedImage);
+    }
   }, [nombreBarberia]);
 
   const handleBarberSelect = (barber: Barber) => {
@@ -53,10 +59,14 @@ const BarberosDisponibles: React.FC = () => {
     setIsMenuOpen(false);
   };
 
-  const getImageUrl = (imageBlob) => {
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate('/login');
+  };
+
+  const getImageUrl = (imageBlob: string) => {
     return `data:image/jpeg;base64,${imageBlob}`;
   };
-  
 
   if (loading) {
     return <div style={styles.loading}>Cargando barberos...</div>;
@@ -72,17 +82,25 @@ const BarberosDisponibles: React.FC = () => {
         <ArrowLeft size={24} color="white" />
       </Link>
       <button onClick={toggleMenu} style={styles.menuButton}>
-        <Menu size={24} color="white" />
+        {userImage ? (
+          <img src={userImage} alt="User" style={styles.userImage} />
+        ) : (
+          <UserCircle size={24} color="white" />
+        )}
       </button>
       {isMenuOpen && (
         <div style={styles.menuDropdown}>
           <button onClick={() => navigateTo('/mi-perfil')} style={styles.menuItem}>
-            <User size={18} />
+            <UserCircle size={18} />
             <span>Mi Perfil</span>
           </button>
           <button onClick={() => navigateTo('/mis-turnos')} style={styles.menuItem}>
             <Calendar size={18} />
             <span>Mis Turnos</span>
+          </button>
+          <button onClick={handleLogout} style={styles.menuItem}>
+            <LogOut size={18} />
+            <span>Cerrar sesión</span>
           </button>
         </div>
       )}
@@ -266,6 +284,12 @@ const styles = {
     fontSize: '1.2em',
     textAlign: 'center' as const,
     padding: '20px',
+  },
+  userImage: {
+    width: '24px',
+    height: '24px',
+    borderRadius: '50%',
+    objectFit: 'cover' as const,
   },
 };
 

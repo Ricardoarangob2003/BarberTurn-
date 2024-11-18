@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle, ArrowLeft } from 'lucide-react';
 import { api } from '../../axiosConfig';
 
 interface User {
@@ -18,7 +18,7 @@ interface UserData {
   email: string;
   telefono: string;
   local?: string;
-  imagen?: string; // Nuevo campo para la imagen de perfil
+  imagen?: string;
 }
 
 export default function Login() {
@@ -29,6 +29,10 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
+  const handleBack = () => {
+    navigate('/'); // Asegúrate de que esta ruta sea correcta para tu página principal
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -37,8 +41,8 @@ export default function Login() {
     try {
       // Intentar iniciar sesión como barbero
       const barberoResponse = await api.get('http://localhost:8090/api/user/barbero');
-      console.log('Respuesta completa de barbero:', barberoResponse); // Verificar respuesta completa
-      console.log('Datos de barbero:', barberoResponse.data); // Verificar datos específicos
+      console.log('Respuesta completa de barbero:', barberoResponse);
+      console.log('Datos de barbero:', barberoResponse.data);
       let user = barberoResponse.data.find(
         (u: User) => u.username === username.trim() && u.password === password.trim()
       );
@@ -47,8 +51,8 @@ export default function Login() {
       // Si no se encuentra como barbero, intentar como cliente
       if (!user) {
         const clienteResponse = await api.get('http://localhost:8090/api/user/cliente');
-        console.log('Respuesta completa de cliente:', clienteResponse); // Verificar respuesta completa
-        console.log('Datos de cliente:', clienteResponse.data); // Verificar datos específicos
+        console.log('Respuesta completa de cliente:', clienteResponse);
+        console.log('Datos de cliente:', clienteResponse.data);
         user = clienteResponse.data.find(
           (u: User) => u.username === username.trim() && u.password === password.trim()
         );
@@ -60,11 +64,11 @@ export default function Login() {
         let userData: UserData | undefined;
         if (rol === 'barbero') {
           const response = await api.get('http://localhost:8090/api/barberos');
-          console.log('Datos de barbero en tabla barberos:', response.data); // Verificar datos específicos
+          console.log('Datos de barbero en tabla barberos:', response.data);
           userData = response.data.find((data: UserData) => data.id === user.id);
         } else {
           const response = await api.get('http://localhost:8090/api/cliente');
-          console.log('Datos de cliente en tabla clientes:', response.data); // Verificar datos específicos
+          console.log('Datos de cliente en tabla clientes:', response.data);
           userData = response.data.find((data: UserData) => data.id === user.id);
         }
 
@@ -106,6 +110,10 @@ export default function Login() {
   return (
     <div style={styles.container}>
       <div style={styles.loginBox}>
+        <button onClick={handleBack} style={styles.backButton}>
+          <ArrowLeft size={20} />
+          Volver
+        </button>
         <h1 style={styles.title}>BarberTurn</h1>
         <h2 style={styles.subtitle}>Iniciar Sesión</h2>
         <form onSubmit={handleSubmit} style={styles.form}>
@@ -172,6 +180,20 @@ const styles = {
     borderRadius: '10px',
     textAlign: 'center' as const,
     color: 'white',
+    position: 'relative' as const,
+  },
+  backButton: {
+    position: 'absolute' as const,
+    top: '10px',
+    left: '10px',
+    background: 'none',
+    border: 'none',
+    color: 'white',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '5px',
+    cursor: 'pointer',
+    fontSize: '0.9em',
   },
   title: {
     fontSize: '2.5em',
@@ -222,13 +244,6 @@ const styles = {
     color: 'black',
     cursor: 'pointer',
     transition: 'background-color 0.3s',
-    ':hover': {
-      backgroundColor: '#f0f0f0',
-    },
-    ':disabled': {
-      backgroundColor: '#cccccc',
-      cursor: 'not-allowed',
-    },
   },
   footer: {
     marginTop: '20px',
